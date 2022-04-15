@@ -1,4 +1,5 @@
 import numpy as np
+from utils import call_counter
 
 
 class ODE:
@@ -21,14 +22,23 @@ class NaturalShapeEq(ODE):
     r' = sin(theta)
     """
 
-    def __init__(self, y0, w, p):
+    def __init__(self, y0, ro_atm, ro_gas, w):
+        self.ro_atm = ro_atm
+        self.ro_gas = ro_gas
         self.w = w
-        self.p = p # p = bz
         super().__init__(y0)
 
-    def __call__(self, s, y):
-        theta = (-2 * np.pi * y[2] * self.w * np.sin(y[0]) + self.p) / y[1]
+    @call_counter
+    def __call__(self, s, y, g=9.8):
+        theta = (-2 * np.pi * y[3] * (self.w * np.sin(y[0]) +
+                 g * (self.ro_atm - self.ro_gas) * y[2])) / y[1]
         T = 2 * np.pi * y[3] * self.w * np.cos(y[0])
         z = np.cos(y[0])
         r = np.sin(y[0])
         return np.array([theta, T, z, r])
+
+    def get_call_counter(self):
+        return self.__call__.calls
+
+    def clear_call_counter(self):
+        self.__call__.__dict__['calls'] = 0

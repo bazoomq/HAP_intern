@@ -9,11 +9,11 @@ class OneStepMethod:
         self.p = None
         self.__dict__.update(**kwargs)
 
-    def step(self, func: ODE, t, y, dt):
+    def step(self, func: ODE, s, y, ds):
         """
-        make a step: t => t+dt
+        make a step: s => s+ds
         """
-        return t + dt
+        return s + ds
 
 
 class RungeKuttaMethod(OneStepMethod):
@@ -23,14 +23,14 @@ class RungeKuttaMethod(OneStepMethod):
     def __init__(self, coeffs: RKScheme):
         super().__init__(**coeffs.__dict__)
 
-    def step(self, func: ODE, t, y, dt):
+    def step(self, func: ODE, s, y, ds):
         A = self.A
         b = self.b
         n = np.size(b)
         c = np.sum(A, axis=1)
         k = np.zeros((n, len(y)))
         for i in range(n):
-            k[i] = np.array(dt * func(t + dt * c[i], y + np.dot(A[i], k)))
+            k[i] = np.array(ds * func(s + ds * c[i], y + np.dot(A[i], k)))
         res = y + b.dot(k)
         return res
 
