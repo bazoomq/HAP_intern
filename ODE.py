@@ -10,8 +10,15 @@ class ODE:
     def __init__(self, y0):
         self.y0 = y0
 
+    @call_counter
     def __call__(self, s, y):
         raise NotImplementedError
+
+    def get_call_counter(self):
+        return self.__call__.calls
+
+    def clear_call_counter(self):
+        self.__call__.__dict__['calls'] = 0
 
 
 class NaturalShapeEq(ODE):
@@ -36,9 +43,3 @@ class NaturalShapeEq(ODE):
         z = np.cos(y[0])
         r = np.sin(y[0])
         return np.array([theta, T, z, r])
-
-    def get_call_counter(self):
-        return self.__call__.calls
-
-    def clear_call_counter(self):
-        self.__call__.__dict__['calls'] = 0
