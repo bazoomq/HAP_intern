@@ -29,17 +29,23 @@ class NaturalShapeEq(ODE):
     r' = sin(theta)
     """
 
-    def __init__(self, y0, ro_atm, ro_gas, w):
+    def __init__(self, y0, ro_atm, ro_gas, w, rp, a):
+        """
+        w - weight density of pumpkin (known)
+        rp - radius of pumpkin (known, precalculate)
+        """
         self.ro_atm = ro_atm
         self.ro_gas = ro_gas
         self.w = w
+        self.rp = rp
+        self.a = a
         super().__init__(y0)
 
     @call_counter
     def __call__(self, s, y, g=9.8):
-        theta = (-2 * np.pi * y[3] * (self.w * np.sin(y[0]) +
-                 g * (self.ro_atm - self.ro_gas) * y[2])) / y[1]
-        T = 2 * np.pi * y[3] * self.w * np.cos(y[0])
+        theta = (-2 * np.pi * y[3] * (self.rp / y[3] * self.w * np.sin(y[0]) +
+                                      g * (self.ro_atm - self.ro_gas) * (y[2] - self.a))) / y[1]
+        T = 2 * np.pi * y[3] * (self.rp / y[3] * self.w) * np.cos(y[0])
         z = np.cos(y[0])
         r = np.sin(y[0])
         return np.array([theta, T, z, r])
