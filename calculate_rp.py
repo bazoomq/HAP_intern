@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 
 def get_sr(rp_max):
-    r_list = np.linspace(0, rp_max, 1000)
+    r_list = np.linspace(0, rp_max, int(rp_max/0.002))
     s_list = []
 
     for r in r_list:
@@ -32,8 +32,6 @@ def interpolate(s_half, r, rp_max):
     return s[:-1], rp
 
 
-def get_rp(s, gt):
-    return float(gt.loc[s])
 
 '''
 rp_max = 6.122831

@@ -4,7 +4,7 @@ from ODE import NaturalShapeEq, ODE
 import coeffs
 from density import density
 from scipy.special import hyp2f1
-from calculate_rp import get_sr, interpolate, get_rp
+from calculate_rp import get_sr, interpolate
 from scipy.interpolate import interp1d
 import pandas as pd
 
@@ -47,11 +47,10 @@ def one_step(theta0, a):
     fsdf = pd.DataFrame(fs, columns=['s'])
     frpdf = pd.DataFrame(frp, columns=['rp'])
     gt = pd.concat([fsdf, frpdf], axis=1)
-    gt = gt.set_index('s')
 
     #rp = get_rp(, gt)
 
-    func = NaturalShapeEq(y0, ro_atm, ro_gas, w, frp, a)
+    func = NaturalShapeEq(y0, ro_atm, ro_gas, w, gt, a)
     func.clear_call_counter()
     _, y = integration(RungeKuttaMethod(coeffs.rk4_coeffs), func, y0, s)
     n_calls = func.get_call_counter()

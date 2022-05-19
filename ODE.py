@@ -1,3 +1,5 @@
+from anyio import get_all_backends
+from matplotlib.pyplot import get
 import numpy as np
 from utils import call_counter
 
@@ -29,7 +31,7 @@ class NaturalShapeEq(ODE):
     r' = sin(theta)
     """
 
-    def __init__(self, y0, ro_atm, ro_gas, w, rp, a):
+    def __init__(self, y0, ro_atm, ro_gas, w, gt, a):
         """
         w - weight density of pumpkin (known)
         rp - radius of pumpkin (known, precalculate)
@@ -37,15 +39,29 @@ class NaturalShapeEq(ODE):
         self.ro_atm = ro_atm
         self.ro_gas = ro_gas
         self.w = w
-        self.rp = rp
+        self.gt = gt
         self.a = a
         super().__init__(y0)
 
+    def get_rp(self, s):
+        try:
+            idx = np.where(np.array(self.gt["s"])==s)[0][0]
+        except:
+            print("Error: Element not in the list")
+
+        rp = self.gt["rp"][idx]
+        
+        return rp
+
     @call_counter
     def __call__(self, s, y, g=9.8):
-        theta = (-2 * np.pi * y[3] * (self.rp / y[3] * self.w * np.sin(y[0]) +
+
+        # rp = self.get_rp(s)
+        rp = 1
+
+        theta = (-2 * np.pi * y[3] * (rp / y[3] * self.w * np.sin(y[0]) +
                                       g * (self.ro_atm - self.ro_gas) * (y[2] - self.a))) / y[1]
-        T = 2 * np.pi * y[3] * (self.rp / y[3] * self.w) * np.cos(y[0])
+        T = 2 * np.pi * y[3] * (rp / y[3] * self.w) * np.cos(y[0])
         z = np.cos(y[0])
         r = np.sin(y[0])
         return np.array([theta, T, z, r])
