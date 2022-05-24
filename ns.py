@@ -16,7 +16,7 @@ def Solve(theta0, A):
     def func(t, y):
         theta, T, z, r = y
         twopir = 2*np.pi*r
-        cos = np.sin(theta)
+        cos = np.cos(theta)
         sin = np.sin(theta)
         p = b*(z-A)
         return [
