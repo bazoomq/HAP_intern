@@ -84,7 +84,7 @@ def F(params):
     intg_rd += ds*r_ds[i]
   return (intg_theta/lam)**2 + (1+(2*np.pi*b(h)*intg_rztheta+2*np.pi*w*intg_rd)/(b_d*(lam**3)))**2
 
-h = 20000
+h = 18000
 initial_guess = [np.pi/4, 3]
 result = optimize.minimize(F, initial_guess)
 if result.success:
