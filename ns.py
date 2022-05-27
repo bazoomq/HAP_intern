@@ -7,7 +7,7 @@ from math import exp, radians
 #import float_alt
 
 l = 16.0544
-ds = 0.001
+ds = 0.0001
 g = 9.8
 payload_weight = 24*g
 
@@ -85,6 +85,7 @@ def F(params):
     intg_rd += ds*r_ds[i]
   return (intg_theta/lam)**2 + (1+(2*np.pi*b(h)*intg_rztheta+2*np.pi*w*intg_rd)/(b_d*(lam**3)))**2
 
+<<<<<<< HEAD
 h = 10300
 success = False
 counter_limit = 10 
