@@ -1,5 +1,5 @@
-from anyio import get_all_backends
-from matplotlib.pyplot import get
+#from anyio import get_all_backends
+#from matplotlib.pyplot import get
 import numpy as np
 from utils import call_counter
 
@@ -45,7 +45,7 @@ class NaturalShapeEq(ODE):
 
     def get_rp(self, s):
         try:
-            idx = np.where(np.array(self.gt["s"])==s)[0][0]
+            idx = np.where(np.array(self.gt["s"]) ==s)[0][0]
         except:
             print("Error: Element not in the list")
 
