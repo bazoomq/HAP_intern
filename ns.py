@@ -1,3 +1,4 @@
+from more_itertools import count_cycle
 from scipy.integrate import solve_ivp
 import scipy.optimize as optimize
 import numpy as np
@@ -84,15 +85,30 @@ def F(params):
     intg_rd += ds*r_ds[i]
   return (intg_theta/lam)**2 + (1+(2*np.pi*b(h)*intg_rztheta+2*np.pi*w*intg_rd)/(b_d*(lam**3)))**2
 
-h = 18000
-initial_guess = [np.pi/4, 3]
-result = optimize.minimize(F, initial_guess)
-if result.success:
-  fitted_params = result.x
-  print(fitted_params)
-  z_sol, r_sol = Solve(fitted_params[0], fitted_params[1], h)[2], Solve(fitted_params[0], fitted_params[1], h)[3]
-  plt.plot(z_sol, r_sol)
-  plt.gca().set_aspect('equal', adjustable = 'box')
-  plt.show()
-else:
-  raise ValueError(result.message)
+h = 10300
+success = False
+counter_limit = 10 
+counter = 0
+while counter<counter_limit:
+  the0 = np.pi/np.random.randint(1,100)
+  A = np.random.random() * 10
+  print("the0: ", the0, "A:", A)
+  initial_guess = [the0, A ]
+  result = optimize.minimize(F, initial_guess,method ="BFGS", options = {"xatol": 1e-8, 'disp': True})
+  success = result.success
+  print("success ", success)
+  
+  if success:
+    fitted_params = result.x
+    print(fitted_params)  
+    z_sol, r_sol = Solve(fitted_params[0], fitted_params[1], h)[2], Solve(fitted_params[0], fitted_params[1], h)[3]
+    plt.plot(z_sol, r_sol)
+    plt.gca().set_aspect('equal', adjustable = 'box')
+    plt.show()
+
+
+  counter += 1
+  print(counter)
+  if counter > counter_limit:
+    raise ValueError(result.message)
+
