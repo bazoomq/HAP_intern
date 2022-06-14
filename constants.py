@@ -1,10 +1,15 @@
-
 l = 16.0544
 ds = 0.001
 g = 9.8065
 M = 24.06031
 payload_weight = M*g
 rp_max = 6.122831
+
+#ddesign constants
+w_d = 0.22
+theta_d = 54 #degree
+h_d = 21850 
+
 
 R_id = 8314.462;        # gas constant                                   (J/K/mol*1000)
 mu_air  = 28.966;             # air molar mass                                 (gram)

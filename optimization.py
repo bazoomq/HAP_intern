@@ -8,7 +8,6 @@ from scipy.integrate import solve_ivp
 
 def Solve(theta0, a, h):
     def func(t, y):
-        w_d = 0.22
         theta, T, z, r = y
         cos = np.cos(theta)
         sin = np.sin(theta)
@@ -30,16 +29,13 @@ def Solve(theta0, a, h):
 
 def F(params,h):
   theta_0, a = params
-  w = 0.22
-  theta_d = radians(54)
-  h_d = 21850 
   b_d = b(h_d)
   lam = (payload_weight/b_d)**(1/3)
   theta_s, z_s, r_s = Solve(theta_0, a, h)[0], Solve(theta_0, a, h)[2], Solve(theta_0, a, h)[3]
-  r_ds = Solve(theta_d, 0, h_d)[3]              #r_d (float altitude)
+  r_ds = Solve(radians(theta_d), 0, h_d)[3]              #r_d (float altitude)
   intg_theta, intg_rztheta, intg_rd = 0, 0, 0   #integral of sin(theta), r(z-a)sin(theta) and r_d
   for i in range(len(theta_s)):
     intg_theta += ds*np.sin(theta_s[i])
     intg_rztheta += ds*np.sin(theta_s[i])*r_s[i]*(z_s[i]-a)
     intg_rd += ds*r_ds[i]
-  return (intg_theta/lam)**2 + (1+(2*np.pi*b(h)*intg_rztheta+2*np.pi*w*intg_rd)/(b_d*(lam**3)))**2
+  return (intg_theta/lam)**2 + (1+(2*np.pi*b(h)*intg_rztheta+2*np.pi*w_d*intg_rd)/(b_d*(lam**3)))**2
