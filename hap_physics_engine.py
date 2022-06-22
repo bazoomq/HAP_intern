@@ -528,7 +528,7 @@ def main():
             #f_S = eps / sqrt(1 - eps * eps3) + k_S * (2 - eps)
 
 
-            f_V = pi / 3 * (eps3 * eps * eps / sqrt(1 - eps3 * eps) - eps * (hyp2f1(1/2, 1/4, 5/4, eps3 * eps) -
+            f_V = (pi / 3) * (eps3 * eps * eps / sqrt(1 - eps3 * eps) - eps * (hyp2f1(1/2, 1/4, 5/4, eps3 * eps) -
                                                                              sqrt(1 - eps3 * eps))) + k_V
             f_S = eps / sqrt(1 - eps3 * eps) + 2 * k_S - hyp2f1(1/2, 1/4, 5/4, eps3 * eps) * eps
 
