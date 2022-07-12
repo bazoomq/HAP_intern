@@ -2,57 +2,9 @@ import time
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from scipy.special import hyp2f1
-from scipy.interpolate import interp1d
-from scipy.integrate import solve_ivp
-from density import density
-from calculate_rp import get_sr
 import concurrent.futures
-
-
-g = 9.8065
-L0 = 24.06031 * g
-wp = 0.229158
-rp_max = 6.122831
-l = 2 * hyp2f1(1/4, 1/2, 5/4, 1) * rp_max
-ds = 0.002
-h = 19000
-
-
-def b(h):
-    ro_atm = density(h)[0]
-    ro_gas = density(h)[1]
-    b = (ro_atm - ro_gas) * g
-    return b
-
-
-rs, s_half = get_sr(rp_max)
-f = interp1d(s_half, rs, kind='cubic')
-
-
-def Solve(params):
-    def func(t, y):
-        if t <= l / 2:
-            rp = f(t)
-        else:
-            rp = f(l - t)
-        theta, T, z, r = y
-        p = b(h) * (z - params[1])
-        sin = np.sin(theta)
-        cos = np.cos(theta)
-        return [
-            - 2 * np.pi * (rp * wp * sin + p * r) / T,
-            2 * np.pi * rp * wp * cos,
-            cos,
-            sin
-        ]
-
-    T0 = L0 / np.cos(params[0])
-    z0, r0 = 0, 0
-
-    sol = solve_ivp(func, t_span=[0, l], y0=[params[0], T0, z0, r0], t_eval=np.arange(0, l, ds))
-
-    return sol.y
+from solve import Solve
+from params import *
 
 
 def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
@@ -79,6 +31,7 @@ def main(grid_params):
                     loss_min = loss
                     optimal_z = z
                     optimal_r = r
+                    optimal_theta = theta
                     theta_last = theta[-1]
                     r_last = r[-1]
                     theta0, a = results[i, 1]
@@ -89,7 +42,8 @@ def main(grid_params):
     plt.plot(optimal_z, optimal_r)
     plt.show()
 
-    res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min])
+    res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min,
+                    optimal_z, optimal_r, optimal_theta])
     return res
 
 
@@ -103,24 +57,27 @@ if __name__=="__main__":
     else:
         a_max = 0
         a_min = -400
-    count_of_step_theta = 900
-    count_of_step_a = 64
+    number_of_steps_theta = 900
+    number_of_steps_a = 64
 
     number_of_recurse = 2
     for i in range(number_of_recurse):
         print('DEPTH ', i)
         print(theta_max, theta_min)
         print(a_max, a_min)
-        theta_step = (theta_max - theta_min) / count_of_step_theta
-        a_step = (a_max - a_min) / count_of_step_a
+        theta_step = (theta_max - theta_min) / number_of_steps_theta
+        a_step = (a_max - a_min) / number_of_steps_a
         res = main([theta_max, theta_min, a_max, a_min, theta_step, a_step])
         theta0, a = res[0], res[1]
         print(theta0, a)
         theta_max, theta_min = theta0 + 2, theta0 - 2
         a_max, a_min = a + 2, a - 2
 
-    print(res)
+    V = np.pi / 3 * ds * np.cos(theta0) * (res[7][0] ** 2 + res[7][0] * res[7][1] + res[7][1] ** 2)
+    for i in range(2, len(res[7])):
+        V += V + np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
 
-    #data.to_excel("output.xlsx")
+    print(res)
+    print(V)
     end = time.time()
     print("Running time: ", end - start, "s")
