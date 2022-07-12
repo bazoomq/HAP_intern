@@ -3,7 +3,7 @@
 This code provides the shape of a balloon depending on the height and set of design parameters. It simulates the change in the shape of the balloon depending on the height (from 15000 to 25000 meters).  
 
 ### Overview
-The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function solves a system of 4 differential equations describing the shape of a balloon depending on the height and parameters $theta0$ and $a$.
+The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function solves a system of 4 differential equations describing the shape of a balloon depending on the height and parameters $\theta0$ and $a$.
 
 $\theta'(s) = {-2 \pi(r_p w_p \sin\theta + p r) \over T}$ \
 $T'(s) = 2 \pi r_p w_p \cos\theta$ \
