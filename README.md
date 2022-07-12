@@ -5,7 +5,7 @@ This code provides the shape of a balloon depending on the height and set of des
 ### Overview
 The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function solves a system of 4 differential equations describing the shape of a balloon depending on the height and parameters theta0 and a.
 
-$ \theta'(s) = {-2 \pi(r_p w_p \sin\theta + p r) \over T} $ \
+$\theta'(s) = {-2 \pi(r_p w_p \sin\theta + p r) \over T}$ \
 $ T'(s) = 2 \pi r_p w_p \cos\theta $ \
 $ z'(s) = \cos\theta$ \
 $ r'(s) = \sin\theta$ 
