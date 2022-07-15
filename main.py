@@ -49,15 +49,15 @@ def main(grid_params):
 
 if __name__=="__main__":
     start = time.time()
-    theta_max = 90
-    theta_min = 0
+    theta_max = 63
+    theta_min = 55
     if h < 21850:
         a_max = 16
         a_min = 0
     else:
         a_max = 0
-        a_min = -400
-    number_of_steps_theta = 900
+        a_min = -50
+    number_of_steps_theta = 100
     number_of_steps_a = 64
 
     number_of_recurse = 2
@@ -73,11 +73,9 @@ if __name__=="__main__":
         theta_max, theta_min = theta0 + 2, theta0 - 2
         a_max, a_min = a + 2, a - 2
 
-    V = np.pi / 3 * ds * np.cos(theta0) * (res[7][0] ** 2 + res[7][0] * res[7][1] + res[7][1] ** 2)
+    V = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (res[7][0] ** 2 + res[7][0] * res[7][1] + res[7][1] ** 2)
     for i in range(2, len(res[7])):
-        V += V + np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
-
-    print(res)
-    print(V)
+        V += np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
+    print("Volume of the balloon: ", V)
     end = time.time()
     print("Running time: ", end - start, "s")
