@@ -1,9 +1,9 @@
 # Natural Shape Balloon 
 
-This code provides the shape of a balloon depending on the height and set of design parameters. It simulates the change in the shape of the balloon depending on the height (from 15000 to 25000 meters).  
+This code provides the shape of a balloon depending on the height (from 15000 to 25000 meters) and set of design parameters. 
 
 ### Overview
-The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function solves a system of 4 differential equations describing the shape of a balloon depending on the height and parameters $\theta0$ and $a$.
+The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function solves a system of 4 differential equations describing the shape of a balloon depending on the height and parameters $\theta_0$ and $a$.
 
 $\theta'(s) = {-2 \pi(r_p w_p \sin\theta + p r) \over T}$ \
 $T'(s) = 2 \pi r_p w_p \cos\theta$ \
@@ -28,9 +28,9 @@ To speed up calculations, we use multiprocessing.
 
 ### Recursive Grid Search
 
-At first, the grid looks like: from 0 to 90 for $\theta_0$ and from 0 to 16 if $h < 21850$ or from -400 to 0 if $h > 21850$ for $a$. Number of steps per axis $theta_0$ is 900, per axis $a$ is 64. 
+At first, the grid looks like: from 0 to 90 for $\theta_0$ and from 0 to 16 if $h < 21850$ or from -400 to 0 if $h > 21850$ for $a$. Number of steps per axis $\theta_0$ is 900, per axis $a$ is 64. 
 
-Applying the grid search once, we got the solution $(\theta_{0, 1}, a_1)$. We create a grid around this solution (with the same number of steps) and apply the algorithm again. Thus, we obtain a more accurate solution.
+Applying the grid search once, we got the approximate solution $(\theta_{0, 1}, a_1)$. We create a grid around this solution (with the same number of steps) and apply the algorithm again. Thus, we obtain a more accurate solution.
 
 ### Multiprocessing
 The code uses multiprocessing to speed up calculations. For multiprocessing we use method `ProcessPoolExecutor` from the library `concurrent`. With this method, the function is run on multiple cores and calculations are performed in parallel at the appropriate number of grid points.
