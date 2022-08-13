@@ -11,4 +11,4 @@ $T'(s) = 2 \pi r_p w_p \cos\theta$ \
 $z'(s) = \cos\theta$ \
 $r'(s) = \sin\theta$ 
 
-Besides the equations above balloon should have $a$ and initial $theta_0$ chosen such that after solving the differential equations the last $theta$ will be $-pi/2$ and $r = 0$.
+Besides the equations above balloon should have $a$ and initial $\theta_0$ chosen such that after solving the differential equations the last $\theta$ will be $-pi/2$ and $r = 0$.
