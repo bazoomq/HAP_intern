@@ -18,6 +18,12 @@ Fo find a solution to the differential equations and combine the two given condi
 We have used gradient descent algorithm (fmin_cg in python) to find the minimum point. At first we have found a reasonable initial guess from where the algorithm can work for the height 25000. After finding the solution for any height we use its values of $a$ and $\theta_0$ as an initial guess for the next height.
 
 ### Files
-The project consists of several parts:
-  constants.py - Keeps all the constants used in project
+The project consists of several parts:\
+  constants.py - Keeps all the constants used in project\
+  bouyancy.py - calculates the buoyancy at any height $h$\
+  interp_s0.py - \
+  optimization.py - gradient algorithm realization\
+  natural_shape_balloon.py - Class for a natural shape balloon is created\
+  main.py\
+  
   
