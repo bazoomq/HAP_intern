@@ -21,9 +21,11 @@ We have used gradient descent algorithm (fmin_cg in python) to find the minimum 
 The project consists of several parts:\
   constants.py - Keeps all the constants used in project\
   bouyancy.py - calculates the buoyancy at any height $h$\
-  interp_s0.py - \
+  interp_s0.py - does an interpolation from r to s\
   optimization.py - gradient algorithm realization\
   natural_shape_balloon.py - Class for a natural shape balloon is created\
   main.py\
-  
+
+### Output
+Output of program is saved on a file called theta_a.csv which contains information about $\theta_0$, $a$, $V$ - volume of balloon etc. The file is created (if not created) or modified in the same directory where the program is.
   
