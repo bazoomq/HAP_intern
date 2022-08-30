@@ -24,6 +24,7 @@ def Solve(params):
         else:
             rp = f(l - t)
         theta, T, z, r = y
+        
         p = b(h) * (z - params[1])
         sin = np.sin(theta)
         cos = np.cos(theta)
