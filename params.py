@@ -1,5 +1,7 @@
 from scipy.special import hyp2f1
 import argparse
+import math
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("number_of_cores", help="how many cores to use for multiproccessing", type=int)
@@ -19,6 +21,9 @@ mu_air = 28.966
 xmu_air = R / mu_air
 mu_gas = 4
 dT_gas = 0
+Cx = 0.47
+S0 = 0.739668778 * math.sqrt(math.pi) * rp_max
+V_max = 1.21852421611856 * S0 ** 3 
 
 Hatm = [0,
   500,

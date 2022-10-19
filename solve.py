@@ -7,8 +7,8 @@ from params import *
 
 
 def b(h):
-    ro_atm = density(h)[0]
-    ro_gas = density(h)[1]
+    ro_atm = density(h)[0][0]
+    ro_gas = density(h)[0][1]
     b = (ro_atm - ro_gas) * g
     return b
 
@@ -17,7 +17,7 @@ rs, s_half = get_sr(rp_max)
 f = interp1d(s_half, rs, kind='cubic')
 
 
-def Solve(params):
+def Solve(params, rmax, velocity):
     def func(t, y):
         if t <= l / 2:
             rp = f(t)
@@ -34,9 +34,9 @@ def Solve(params):
             cos,
             sin
         ]
-
-    T0 = L0 / np.cos(params[0])
+    
     z0, r0 = 0, 0
+    T0 = (L0 + Cx * density(h)[0] * velocity * abs(velocity) * np.pi * rmax**2 / 2) / np.cos(params[0])
 
     sol = solve_ivp(func, t_span=[0, l], y0=[params[0], T0, z0, r0], t_eval=np.arange(0, l, ds))
 

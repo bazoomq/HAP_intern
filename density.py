@@ -14,4 +14,4 @@ def density(z):
     T_gas = T_atm + dT_gas
     ro_gas = P_atm / xmu_gas / T_gas
 
-  return [ro_atm, ro_gas]
+  return [ro_atm, ro_gas], P_atm, T_gas

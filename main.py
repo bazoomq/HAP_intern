@@ -1,75 +1,64 @@
 import time
 import numpy as np
 from matplotlib import pyplot as plt
-import concurrent.futures
-from solve import Solve
+from solve import Solve, b
+from density import density
 from params import *
+from theta0_a import theta0_a
+import argparse
 
 
-def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
-    grid = []
-    for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
-        for j in np.arange(a_max, a_min, -step_a):
-            grid.append([i, j])
-    return grid
-
-
-def main(grid_params, number_of_cores):
-    theta_max, theta_min, a_max, a_min, theta_step, a_step = grid_params
-    grid = get_grid(theta_max, theta_min, a_max, a_min, theta_step, a_step)
-    optimal_z, optimal_r, loss_min = [], [], 100
-    with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
-        results = [[executor.submit(Solve, g), g] for g in grid]
-        results = np.array(results)
-        for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
-            theta, T, z, r = f.result()
-            if -92 < np.degrees(theta[-1]) < -88 and -0.1 < r[-1] < 0.1:
-                loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + r[-1] ** 2)
-                print("Theta0, a: ", results[i, 1], "Loss: ", loss)
-                if loss < loss_min:
-                    loss_min = loss
-                    theta0, a = results[i, 1]
-                    theta_last = theta[-1]
-                    r_last = r[-1]
-                    optimal_z = z
-                    optimal_r = r
-                    optimal_theta = theta
-
-    res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
-    return res
-
-
-if __name__=="__main__":
-    start = time.time()
-    theta_max = 90
-    theta_min = 0
-    if h < 21850:
+def main(number_of_cores, h):
+    if h < 21500:
+        theta_max = 25
+        theta_min = 0
         a_max = 16
-        a_min = 0
-        number_of_steps_a = 64
-    else:
-        a_max = 0
-        a_min = -400
+        a_min = 5
         number_of_steps_a = 100
+    else:
+        theta_max = 90
+        theta_min = 20
+        a_max = 5.1
+        a_min = -400
+        number_of_steps_a = 400
         
-    number_of_steps_theta = 900
+    number_of_steps_theta = 1000
 
-    number_of_recurse = 2
-    for i in range(number_of_recurse):
+    for i in range(number_of_recurse = 2):
         print('DEPTH ', i)
         print(theta_max, theta_min)
         print(a_max, a_min)
+        
         theta_step = (theta_max - theta_min) / number_of_steps_theta
         a_step = (a_max - a_min) / number_of_steps_a
-        res = main([theta_max, theta_min, a_max, a_min, theta_step, a_step], number_of_cores)
+        
+        tol_rmax = 1e-3
+        tol_mgas = 5 * 1e-3
+        rmax = rp_max
+        rmax_new = 0
+        m_gas = 3.491565771
+
+        for velocity in np.arange(-5.0, 5.0, 0.01):
+            while rmax - rmax_new > tol_rmax:
+                if rmax_new != 0:
+                    rmax = rmax_new
+                res = theta0_a([theta_max, theta_min, a_max, a_min, theta_step, a_step], rmax, velocity, number_of_cores)
+                rmax_new = res[4] 
+            V = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (res[7][0] ** 2 + res[7][0] * res[7][1] + res[7][1] ** 2)
+            m_gas_ = 0
+            for i in range(2, len(res[7])):
+                dV_i = np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
+                V += dV_i
+                dm_i = (density[1] + b(h)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density[2]) 
+                m_gas_ += dm_i
+
+            if m_gas_ - m_gas < tol_mgas:
+                break
+
         theta0, a = res[0], res[1]
         print(theta0, a)
         theta_max, theta_min = theta0 + 2, theta0 - 2
         a_max, a_min = a + 2, a - 2
-
-    V = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (res[7][0] ** 2 + res[7][0] * res[7][1] + res[7][1] ** 2)
-    for i in range(2, len(res[7])):
-        V += np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
 
     
     print("______________________________")
@@ -82,6 +71,20 @@ if __name__=="__main__":
     plt.plot(res[6], res[7])
     plt.text(0.5, 0.5, 'height: {}, theta0: {}, a: {}, volume: {}'.format(h, theta0, a, V))
     plt.savefig('height_%s.png' % h)
+
+
+if __name__=="__main__":
+    start = time.time()
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument("number_of_cores", help="how many cores to use for multiproccessing", type=int)
+    #parser.add_argument("height", help="height of balloon", type=int)
+    #args = parser.parse_args()
+    #number_of_cores = args.number_of_cores
+    #h = args.height
+
+    number_of_cores = 4
+    h = 24700
+    main(number_of_cores, h)
 
     end = time.time()
     print("Running time: ", end - start, "s")
