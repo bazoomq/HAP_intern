@@ -11,7 +11,8 @@ number_of_cores = args.number_of_cores
 h = args.height
 
 g = 9.8065
-L0 = 24.06031 * g
+m_payload = 11.92
+L0 = m_payload * g
 wp = 0.229158
 rp_max = 6.122831
 l = 2 * hyp2f1(1/4, 1/2, 5/4, 1) * rp_max
@@ -24,6 +25,11 @@ dT_gas = 0
 Cx = 0.47
 S0 = 0.739668778 * math.sqrt(math.pi) * rp_max
 V_max = 1.21852421611856 * S0 ** 3 
+
+m_b = 8.646213297
+m_bl = 0.922531663
+m_gas = 3.491565771
+
 
 Hatm = [0,
   500,

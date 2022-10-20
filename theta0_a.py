@@ -27,7 +27,6 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
             theta, T, z, r = f.result()
             if -92 < np.degrees(theta[-1]) < -88 and -0.1 < r[-1] < 0.1:
                 loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + r[-1] ** 2)
-                # print("Theta0, a: ", results[i, 1], "Loss: ", loss)
                 if loss < loss_min:
                     loss_min = loss
                     theta0, a = results[i, 1]
