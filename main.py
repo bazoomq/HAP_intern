@@ -31,6 +31,7 @@ def main(number_of_cores, h):
     rmax_new = 0
 
     for velocity in np.arange(-5.0, 5.0, 0.01):
+        print("velocity = ", velocity)
         count_rmax = 0
         while rmax - rmax_new > tol_rmax:
             if rmax_new != 0:
@@ -38,7 +39,7 @@ def main(number_of_cores, h):
 
             number_of_recurse = 2
             for i in range(number_of_recurse):
-                # print('DEPTH ', i)
+                print('r_max = ', rmax, ', DEPTH ', i)
                 # print(theta_max, theta_min)
                 # print(a_max, a_min)
                 theta_step = (theta_max - theta_min) / number_of_steps_theta
