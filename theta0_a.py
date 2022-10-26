@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import concurrent.futures
 from solve import Solve
 from params import *
-
+import pdb
 
 def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
     grid = []
@@ -20,11 +20,13 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
     theta_max, theta_min, a_max, a_min, theta_step, a_step = grid_params
     grid = get_grid(theta_max, theta_min, a_max, a_min, theta_step, a_step)
     optimal_z, optimal_r, loss_min = [], [], 100
+    # pdb.set_trace()
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve1, g), g] for g in grid]
         results = np.array(results)
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             theta, T, z, r = f.result()
+            print("11111")
             if -92 < np.degrees(theta[-1]) < -88 and -0.1 < r[-1] < 0.1:
                 loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + r[-1] ** 2)
                 if loss < loss_min:
