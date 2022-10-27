@@ -29,7 +29,7 @@ def main(number_of_cores, h):
     tol_mgas = 5 * 1e-3
 
 
-    for velocity in np.arange(3.0, 3.1, 0.01):
+    for velocity in np.arange(3.0, 3.5, 0.01):
         print("velocity = ", velocity)
         rmax = rp_max
         rmax_new = 0
@@ -47,8 +47,8 @@ def main(number_of_cores, h):
                 theta_step = (theta_max - theta_min) / number_of_steps_theta
                 a_step = (a_max - a_min) / number_of_steps_a
                 res = theta0_a([theta_max, theta_min, a_max, a_min, theta_step, a_step], rmax, velocity, number_of_cores)
-                theta_max, theta_min = res[0] + 2, res[0] - 2
-                a_max, a_min = res[1] + 2, res[1] - 2
+                theta_max, theta_min = res[0] + 1, res[0] - 1
+                a_max, a_min = res[1] + 1, res[1] - 1
 
             rmax_new = res[4] 
             count_rmax += 1
@@ -69,7 +69,12 @@ def main(number_of_cores, h):
     Fg = (m_payload + m_b + m_bl + m_gas) * g
     Fa = density(h)[0][0] * V * g
 
+
     theta0, a = res[0], res[1]
+
+    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(h)[0][0] * math.pi * rmax ** 2)))
+    F_drag = -Cx * (density(h)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+    dF = (Fa - Fg) + F_drag
 
     print("_______________________________")
     print("____________RESULTS____________")
@@ -80,13 +85,16 @@ def main(number_of_cores, h):
     print("r max: ", res[4])
     print("Last theta: ", np.degrees(res[2]), ", Last R: ", res[3])
     print("Volume of the balloon: ", V)
-    print("Difference between m_gas and calculated m_gas: ", abs(m_gas_ - m_gas))
-    print("Difference between Fg and Fa", Fg - Fa)
-    print("Velocity of the ballon: ", velocity)
+    print("Difference between m_gas and calculated m_gas: ", m_gas_ - m_gas)
+    print("Difference between forces", dF)
+    print("Velocity of the balloon: ", velocity)
+    print("Velocity of the balloon output: ", velocity_output)
+
 
     plt.plot(res[6], res[7])
-    plt.text(0.5, 0.5, 'height: {}, theta0: {}, a: {}, volume: {}, velocity: {}'.format(h, theta0, a, V, velocity))
-    plt.savefig('height_%s.png' % h)
+    # plt.text(0.5, 0.5, 'height: {}, velocity: {}'.format(h, round(velocity, 3)))
+    # plt.text(0.5, 0.2, 'theta0: {}, a: {}, volume: {}'.format(round(theta0, 4), round(a, 3), round(V, 3)))
+    plt.savefig('height_%s.svg' % h)
 
 
 if __name__=="__main__":
