@@ -4,8 +4,8 @@ import math
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("number_of_cores", help="how many cores to use for multiproccessing", type=int)
-parser.add_argument("height", help="height of balloon", type=int)
+parser.add_argument("--number_of_cores", help="how many cores to use for multiproccessing", type=int)
+parser.add_argument("--height", help="height of balloon", type=int)
 args = parser.parse_args()
 number_of_cores = args.number_of_cores
 h = args.height

@@ -36,7 +36,7 @@ def Solve(params, rmax, velocity):
         ]
     
     z0, r0 = 0, 0
-    T0 = (L0 + Cx * density(h)[0] * velocity * abs(velocity) * np.pi * rmax**2 / 2) / np.cos(params[0])
+    T0 = (L0 + Cx * density(h)[0][0] * velocity * abs(velocity) * np.pi * rmax**2 / 2) / np.cos(params[0])
 
     sol = solve_ivp(func, t_span=[0, l], y0=[params[0], T0, z0, r0], t_eval=np.arange(0, l, ds))
 

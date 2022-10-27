@@ -16,23 +16,25 @@ def main(number_of_cores, h):
         a_min = 5
         number_of_steps_a = 100
     else:
-        theta_max = 90
-        theta_min = 20
-        a_max = 5.1
-        a_min = -400
-        number_of_steps_a = 400
+        theta_max = 70
+        theta_min = 65
+        a_max = -3
+        a_min = -4
+        number_of_steps_a = 20
         
-    number_of_steps_theta = 1000
+    number_of_steps_theta = 100
 
 
     tol_rmax = 1e-3
     tol_mgas = 5 * 1e-3
-    rmax = rp_max
-    rmax_new = 0
 
-    for velocity in np.arange(-5.0, 5.0, 0.01):
+
+    for velocity in np.arange(3.0, 3.1, 0.01):
         print("velocity = ", velocity)
+        rmax = rp_max
+        rmax_new = 0
         count_rmax = 0
+        
         while rmax - rmax_new > tol_rmax:
             if rmax_new != 0:
                 rmax = rmax_new
@@ -58,14 +60,14 @@ def main(number_of_cores, h):
         for i in range(2, len(res[7])):
             dV_i = np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
             V += dV_i
-            dm_i = (density[1] + b(h)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density[2]) 
+            dm_i = (density(h)[1] + b(h)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density(h)[2]) 
             m_gas_ += dm_i
 
         if abs(m_gas_ - m_gas) < tol_mgas:
             break
     
     Fg = (m_payload + m_b + m_bl + m_gas) * g
-    Fa = density[0][0] * V * g
+    Fa = density(h)[0][0] * V * g
 
     theta0, a = res[0], res[1]
 
