@@ -13,9 +13,10 @@ def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
     return grid
 
 
-def theta0_a(grid_params, rmax, velocity, number_of_cores):    
-    theta_max, theta_min, a_max, a_min, theta_step, a_step = grid_params
-    grid = get_grid(theta_max, theta_min, a_max, a_min, theta_step, a_step)
+def theta0_a(grid_params, frame, rmax, velocity, number_of_cores):        
+    theta0_max, theta0_min, a_max, a_min, theta_step, a_step = grid_params
+    theta_tol, r_tol = frame
+    grid = get_grid(theta0_max, theta0_min, a_max, a_min, theta_step, a_step)
     optimal_z, optimal_r, loss_min = [], [], 100
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
@@ -24,7 +25,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
             theta, T, z, r = f.result()
-            if -92 < np.degrees(theta[-1]) < -88 and -0.1 < r[-1] < 0.1:
+            if  90 - theta_tol < np.degrees(theta[-1]) < 90 + theta_tol and -r_tol < r[-1] < r_tol:
                 loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + r[-1] ** 2)
                 if loss < loss_min:
                     loss_min = loss
