@@ -9,7 +9,7 @@ from theta0_a import theta0_a
 
 def main(number_of_cores, h):
     if h < 21500:
-        theta0_max = 20
+        theta0_max = 25
         theta0_min = 0
         a_max = 16
         a_min = 5
@@ -23,7 +23,7 @@ def main(number_of_cores, h):
         
     number_of_steps_theta0 = 90
 
-    tol_rmax = 1e-2
+    tol_rmax = 1e-1
     tol_mgas = 1e-1
 
     init_velocity = 1  
