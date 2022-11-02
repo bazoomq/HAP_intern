@@ -5,16 +5,15 @@ from solve import Solve, b
 from density import density
 from params import *
 from theta0_a import theta0_a
-import argparse
 
 
 def main(number_of_cores, h):
     if h < 21500:
-        theta0_max = 25
+        theta0_max = 20
         theta0_min = 0
         a_max = 16
         a_min = 5
-        number_of_steps_a = 10
+        number_of_steps_a = 50
     else:
         theta0_max = 90
         theta0_min = 20
@@ -24,14 +23,13 @@ def main(number_of_cores, h):
         
     number_of_steps_theta0 = 90
 
-    tol_rmax = 1e-1
-    tol_mgas = 1e-2
+    tol_rmax = 1e-2
+    tol_mgas = 1e-1
 
     init_velocity = 1  
     velocity = init_velocity  
     velocity_output = 3
     velocity_tollerance = 1e-1
-    # for velocity in np.arange(3.0, 3.5, 0.01):
     m_gas_out = 0
     m_gas = 3.491565771
     while abs(velocity - velocity_output) > velocity_tollerance or abs(m_gas_out - m_gas) > tol_mgas:
@@ -80,9 +78,7 @@ def main(number_of_cores, h):
             V += dV_i
             dm_i = (density(h)[1] + b(h)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density(h)[2]) 
             m_gas_out += dm_i
-        
-        # if abs(m_gas_ - m_gas) < tol_mgas:
-        #     break
+            
         
         theta0, a = res[0], res[1]
         Fg = (m_payload + m_b + m_gas) * g
@@ -102,8 +98,8 @@ def main(number_of_cores, h):
     F_drag = -Cx * (density(h)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
     dF = (Fa - Fg) + F_drag
 
-    print("_______________________________")
-    print("____________RESULTS____________")
+    print("__________________________________")
+    print("____________RESULTS_______________")
     print("____________h = ", h, "____________")
 
     print("theta0: ", theta0, ", a: ", a)
