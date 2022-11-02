@@ -28,7 +28,7 @@ To speed up calculations, we use multiprocessing.
 
 ### Recursive Grid Search
 
-t first, the grid looks like: from 0 to 90 for $\theta_0$ and from 0 to 16 if $h < 21850$ or from -400 to 0 if $h >= 21850$ for $a$. Number of steps per axis $theta_0$ is 900, per axis $a$ is 64 if $h < 21850$ and 100 if $h >= 21850$. 
+At first, the grid looks like: from 0 to 90 for $\theta_0$ and from 0 to 16 if $h < 21850$ or from -400 to 0 if $h >= 21850$ for $a$. Number of steps per axis $theta_0$ is 900, per axis $a$ is 64 if $h < 21850$ and 100 if $h >= 21850$. 
 
 Applying the grid search once, we got the approximate solution $(\theta_{0, 1}, a_1)$. We create a grid around this solution (with the same number of steps) and apply the algorithm again. Thus, we obtain a more accurate solution.
 
