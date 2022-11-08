@@ -1,6 +1,6 @@
 # Natural Shape Balloon 
 
-This code provides the shape of a balloon depending on the height (from 15000 to 25000 meters) and set of design parameters. 
+This code provides the shape of a balloon depending on the height (from 15000 to 25000 meters) and set of design parameters.   
 
 ### Overview
 The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function solves a system of 4 differential equations describing the shape of a balloon depending on the height and parameters $\theta_0$ and $a$.
@@ -28,15 +28,17 @@ To speed up calculations, we use multiprocessing.
 
 ### Recursive Grid Search
 
-At first, the grid looks like: from 0 to 90 for $\theta_0$ and from 0 to 16 if $h < 21850$ or from -400 to 0 if $h > 21850$ for $a$. Number of steps per axis $\theta_0$ is 900, per axis $a$ is 64. 
+At first, the grid looks like: from 0 to 90 for $\theta_0$ and from 0 to 16 if $h < 21850$ or from -400 to 0 if $h >= 21850$ for $a$. Number of steps per axis $theta_0$ is 900, per axis $a$ is 64 if $h < 21850$ and 100 if $h >= 21850$. 
 
 Applying the grid search once, we got the approximate solution $(\theta_{0, 1}, a_1)$. We create a grid around this solution (with the same number of steps) and apply the algorithm again. Thus, we obtain a more accurate solution.
 
 ### Multiprocessing
-The code uses multiprocessing to speed up calculations. For multiprocessing we use method `ProcessPoolExecutor` from the library `concurrent`. With this method, the function is run on multiple cores and calculations are performed in parallel at the appropriate number of grid points.
+The code uses multiprocessing to speed up calculations. For multiprocessing we use method `ProcessPoolExecutor` from the library `concurrent`. With this method, the function is run on multiple cores and calculations are performed in parallel at the appropriate number of grid points. The number of cores is entered by the user when the code is run (`number_of_cores` parameter).  
 
 ### Run the code
-To run the code, you need to set the height h (currently in the file `params.py`) and run the `main` function from `main.py` file.
+To launch the code you need to run the following: 
+` python main.py [number_of_cores] [height] `
+
 
 ### Output
 At the output we get the parameters $\theta_0$ and a; arrays of z and r values that define the shape of the balloon. In addition, the maximum value of r, the last value of r and $\theta$, the value of the loss function, list of $z, r, \theta$ and the volume of the balloon $V$, as well as a plot of r versus z (balloon shape) are displayed for the future analysis and comparison. 
