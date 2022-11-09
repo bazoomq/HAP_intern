@@ -27,12 +27,13 @@ def main(number_of_cores, h):
     tol_rmax = 1e-2
     tol_mgas = 1e-2
 
-    init_velocity = 1  
-    velocity = init_velocity  
-    velocity_output = 3
+    
+    velocity = 0  
+    velocity_output = 10
     velocity_tollerance = 1e-2
     m_gas_out = 0
-    m_gas = 3.491565771
+
+    
     while abs(velocity - velocity_output) > velocity_tollerance or abs(m_gas_out - m_gas) > tol_mgas:
         velocity = velocity_output
         m_gas = m_gas_out
@@ -49,8 +50,7 @@ def main(number_of_cores, h):
             number_of_recurse = 5
             for i in range(number_of_recurse):
                 print('r_max = ', rmax, ', DEPTH ', i)
-                # print(theta_max, theta_min)
-                # print(a_max, a_min)
+                
                 theta_tol = 3 / (1.2)**i
                 if i <= 5:
                     r_tol = 2 / 2 ** i 
