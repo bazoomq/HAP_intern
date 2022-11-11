@@ -1,6 +1,15 @@
 from math import sqrt, pi, asin
 from scipy.special import hyp2f1, ellipkinc
 import pandas as pd
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', type=argparse.FileType('r'), help='input file path')
+parser.add_argument('--output', type=argparse.FileType('w'), help='output file path')
+args = parser.parse_args()
+input = args.input
+output = args.output
 
 
 k_V = 2.7458122499512 # coefficient of pumpkin shape volume
@@ -12,7 +21,7 @@ So_b = k_S * R_b
 
 def volume_cone_pumpkin(eps):
     """
-    calculate volume of the cone-pumpkin shape balloon depends on epsilon
+    calculate volume of the cone-pumpkin conjugated balloon depends on epsilon
     using scipy.special package's funtctions: 
     - ellipkinc: calculate incomplete elliptic integral of the first kind
     - hyp2f1: 2F1 hypergeometric function
@@ -30,12 +39,12 @@ def volume_cone_pumpkin(eps):
 
 def radius_cone_pumpkin(V_b):
     """
-    calculate radius of pumpkin part, calculate x and height of cone part of the cone-pumpkin shape balloon,
+    calculate radius of the pumpkin part, calculate radius and height of the cone part of the cone-pumpkin conjugated balloon,
     getting accurate epsilon using simple bisection method (with eps_error)  
-    using volume_cone_pumpkin function: calculate volume of the cone-pumpkin shape balloon depends on epsilon
+    using volume_cone_pumpkin function: calculate volume of the cone-pumpkin conjugated balloon depends on epsilon
 
     :param V_b: balloon volume
-    :return: epsilon, radius of the cone-pumpkin shape balloon, x and height of cone part
+    :return: epsilon, radius of the pumpkin part, radius (on the top) and height of the cone part
     """
     eps_error = 1e-6
     eps0 = 0
@@ -43,28 +52,44 @@ def radius_cone_pumpkin(V_b):
  
     while (abs((eps1 - eps0) / eps1)) >= eps_error:
         eps = (eps0 + eps1) / 2
-        V_b_eq = volume_cone_pumpkin(eps)[0] - V_b 
+        volume_diff = volume_cone_pumpkin(eps)[0] - V_b 
 
-        if (V_b_eq < 0):
+        if (volume_diff < 0):
             eps1 = eps
         else:
             eps0 = eps
 
-    Rx = volume_cone_pumpkin(eps)[1]
-    x_cone = eps * Rx
-    h_cone = x_cone / sqrt(1 / (eps**4) - 1)
-    print("Difference of volumes: ", V_b_eq)
+    pumpkin_radius = volume_cone_pumpkin(eps)[1]
+    cone_radius = eps * pumpkin_radius
+    cone_height = cone_radius / sqrt(1 / (eps**4) - 1)
+    print("Difference of volumes: ", volume_diff)
 
-    return eps, Rx, x_cone, h_cone
+    return eps, pumpkin_radius, cone_radius, cone_height
 
 
-# output results to csv file
+def calculation_from_file(input, output):
+    """
+    get data from a CSV file, perform calculations and write the results to another CSV file    
+    :param input: path to csv file to read the list of input volumes
+    :param output: path to csv file to save results 
+    :return: 
+    """
+    df = pd.DataFrame(columns=['epsilon', 'radius of the balloon', 'x of cone', 'height of cone'], dtype=object)
+    df.to_csv(output, index=False)
 
-df = pd.DataFrame(columns=['epsilon', 'radius of the balloon', 'x of cone', 'height of cone'], dtype=object)
-df.to_csv('./results/cone_pumpkin_conjugate.csv', index=False)
+    volume_arr = pd.read_csv(input).values
+    for i in volume_arr:
+        eps, Rx, x_cone, h_cone = radius_cone_pumpkin(i)
+        new_row = pd.DataFrame([[eps, Rx, x_cone, h_cone]]) 
+        new_row.to_csv(output, mode='a', index=False, header=False) 
+    
+    return
 
-volume_arr = [192.219]
-for i in volume_arr:
-    eps, Rx, x_cone, h_cone = radius_cone_pumpkin(i)
-    new_row = pd.DataFrame([[eps, Rx, x_cone, h_cone]]) 
-    new_row.to_csv('./results/cone_pumpkin_conjugate.csv', mode='a', index=False, header=False) 
+
+if __name__=="__main__":
+    """
+    how to use: 
+    python cone_pumpkin_conjugation.py --input INPUT_FILE_PATH --output OUTPUT_FILE_PATH
+    """
+    calculation_from_file(input, output)
+    
