@@ -1,4 +1,4 @@
 def a(x):
-    return x^2
+    return x**2
 
 print(a(10)) 
