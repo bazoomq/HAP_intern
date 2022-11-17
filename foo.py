@@ -1,5 +1,5 @@
 def a(x):
-    "comment"
+    "comment ad"
     return x**2
 
 print(a(10)) 
