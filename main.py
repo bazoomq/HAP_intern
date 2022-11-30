@@ -124,6 +124,10 @@ def main(number_of_cores, height):
 
 
 if __name__=="__main__":
+    """
+    how to use:
+    python main.py --number_of_cores NUMBER_OF_CORES --height HEIGHT
+    """
     start = time.time()
     main(number_of_cores, height)
     end = time.time()
