@@ -24,10 +24,9 @@ def theta0_a(grid_params, frame, rmax, velocity, number_of_cores):
         count = 0
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
-            theta, T, z, r = f.result()
+            theta, _, z, r = f.result()
         
-            if  -90 - theta_tol < np.degrees(theta[-1]) < -90 + theta_tol and -r_tol < r[-1] < r_tol:
-                
+            if  -90 - theta_tol < np.degrees(theta[-1]) < -90 + theta_tol and -r_tol < r[-1] < r_tol:                
                 loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + r[-1] ** 2)
                 if loss < loss_min:
                     loss_min = loss
@@ -37,7 +36,7 @@ def theta0_a(grid_params, frame, rmax, velocity, number_of_cores):
                     optimal_z = z
                     optimal_r = r
                     optimal_theta = theta
-                    print("theta: ", np.degrees(theta[-1]), " theta_tollerance: ", theta_tol, " r: ", r[-1], " r_tol: ", r_tol)
+                    print("theta: ", np.degrees(theta[-1]), " theta_tolerance: ", theta_tol, " r: ", r[-1], " r_tol: ", r_tol)
                     print("theta0: ", np.degrees(theta0), "a: ", a)
             else:
                 continue

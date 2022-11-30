@@ -14,8 +14,8 @@ def buoyancy(height):
     :param height: altitude
     :return: buoyancy value
     """
-    ro_atm = density(height)[0][0]
-    ro_gas = density(height)[0][1]
+    ro_atm = density(height)[0]
+    ro_gas = density(height)[1]
     buoyancy = (ro_atm - ro_gas) * g
     return buoyancy
 

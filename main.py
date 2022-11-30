@@ -9,20 +9,22 @@ import pandas as pd
 
 
 def main(number_of_cores, height):
+    rho_atm, _, P_atm, T_gas = density(height)
+
     if height < 21500:
         theta0_max = 25
         theta0_min = 0
         a_max = 16
         a_min = 5
         number_of_steps_a = 50
+        number_of_steps_theta0 = 250
     else:
         theta0_max = 90
         theta0_min = 20
         a_max = 5.1
         a_min = -400
         number_of_steps_a = 100
-        
-    number_of_steps_theta0 = 90
+        number_of_steps_theta0 = 700
 
     rmax_tol = 1e-2
     mgas_tol = 1e-2
@@ -47,7 +49,7 @@ def main(number_of_cores, height):
 
             number_of_recurse = 5
             for i in range(number_of_recurse):
-                print('r_max = ', rmax, ', DEPTH ', i)
+                print('r_max = ', rmax, ', DEPTH: ', i)
                 
                 theta_tol = 3 / (1.2)**i
                 if i <= 5:
@@ -57,76 +59,74 @@ def main(number_of_cores, height):
 
                 theta_step = (theta0_max - theta0_min) / number_of_steps_theta0
                 a_step = (a_max - a_min) / number_of_steps_a
-                res = theta0_a([theta0_max, theta0_min, a_max, a_min, theta_step, a_step], [theta_tol, r_tol], rmax, velocity, number_of_cores)
-                theta0_max, theta0_min = res[0] - 10 / 2 ** i, res[0] + 10 / 2 ** i
+                # theta0 in degrees
+                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta_step, a_step], 
+                                                                                        [theta_tol, r_tol], rmax, velocity, number_of_cores)
+                theta0_max, theta0_min = theta0 - 10 / 2 ** i, theta0 + 10 / 2 ** i
 
                 if height < 21500:
-                    a_max, a_min = res[1] - 2 / 2 ** i, res[1] + 2 / 2 * i    
+                    a_max, a_min = a - 2 / 2 ** i, a + 2 / 2 * i    
                 else:
-                    a_max, a_min = res[1] - 50 / 2 ** i, res[1] + 50 / 2 * i
+                    a_max, a_min = a - 50 / 2 ** i, a + 50 / 2 * i
 
-            rmax_new = res[4] 
+            rmax_new = max_radius 
             count_rmax += 1
 
         print("Iterations for finding optimal rmax: ", count_rmax)
 
-        V = np.pi / 3 * ds * np.cos(np.radians(res[0])) * (res[7][0] ** 2 + res[7][0] * res[7][1] + res[7][1] ** 2)
+        volume = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_out = 0
-        for i in range(2, len(res[7])):
-            dV_i = np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
-            V += dV_i
-            dm_i = (density(height)[1] + buoyancy(height)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density(height)[2]) 
+        for i in range(2, len(r)):
+            dV_i = np.pi / 3 * ds * np.cos(theta[i - 1]) * (r[i - 1] ** 2 + r[i - 1] * r[i] + r[i] ** 2)
+            volume += dV_i
+            dm_i = (P_atm + buoyancy(height)*(z[i] - a)) * dV_i * mu_gas / (R * T_gas) 
             m_gas_out += dm_i
             
         
-        theta0, a = res[0], res[1]
         Fg = (m_payload + m_b + m_gas) * g
-        Fa = density(height)[0][0] * V * g
+        Fa = rho_atm * volume * g
         
-        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(height)[0][0] * math.pi * rmax ** 2)))
-        F_drag = -Cx * (density(height)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
-        dF = (Fa - Fg) + F_drag
+        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax ** 2)))
+        F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+        dF = (Fa - Fg) + F_drag     
+        
 
-        
-        
-    theta0, a = res[0], res[1]
     Fg = (m_payload + m_b + m_gas) * g
-    Fa = density(height)[0][0] * V * g
+    Fa = rho_atm * volume * g
     
-    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(height)[0][0] * math.pi * rmax ** 2)))
-    F_drag = -Cx * (density(height)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax ** 2)))
+    F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
     dF = (Fa - Fg) + F_drag
 
-    filename = 'result_output_for_altitude_%d' % height
-    f = open(filename, 'w')
+    f = open(output_filename, 'w')
 
     print("_______________________height = ", height, "_______________________", file=f)
-
     print("theta0: ", theta0, ", a: ", a, file=f)
-    print("Total lost (for theta0 and a): ", res[5])
-    print("r max: ", res[4])
-    print("Last theta: ", np.degrees(res[2]), ", Last R: ", res[3])
-    print("Volume of the balloon: ", V)
-    print("Difference between m_gas and calculated m_gas: ", m_gas_out - m_gas)
-    print("Difference between forces", dF)
-    print("Velocity of the balloon: ", velocity)
-    print("Velocity of the balloon output: ", velocity_output)
-    print("Difference between input and output velocities: ", velocity - velocity_output)
-    print("Difference betweend Fa and Fg: ", Fa - Fg)
-
-    plt.plot(res[6], res[7])
-    # plt.text(0.5, 0.5, 'height: {}, velocity: {}'.format(h, round(velocity, 3)))
-    # plt.text(0.5, 0.2, 'theta0: {}, a: {}, volume: {}'.format(round(theta0, 4), round(a, 3), round(V, 3)))
-    plt.savefig('height_%s.svg' % height)
+    print("Maximum radius: ", max_radius, file=f)
+    print("Last theta: ", np.degrees(theta_last), ", Last R: ", r_last, file=f)
+    print("Total lost (for theta0 and a): ", loss, file=f)
+    print("___________________________________________________________________", file=f)
+    print("Volume of the balloon: ", volume, file=f)
+    print("Difference between m_gas and calculated m_gas: ", m_gas_out - m_gas, file=f)
+    print("Difference betweend Fa and Fg: ", Fa - Fg, file=f)
+    print("Difference between all forces {(Fa - Fg) + F_drag}: ", dF, file=f)
+    print("Input velocity of the balloon: ", velocity, file=f)
+    print("Output velocity of the balloon: ", velocity_output, file=f)
+    print("Difference between input and output velocities: ", velocity - velocity_output, file=f)
+    
+    plt.plot(z, r)
+    # plt.text(0.5, 0.5, 'height: {}, velocity: {}'.format(height, round(velocity, 3)))
+    # plt.text(0.5, 0.2, 'theta0: {}, a: {}, volume: {}'.format(round(theta0, 4), round(a, 3), round(volume, 3)))
+    plt.savefig(plot_filename)
  
-    df = pd.DataFrame(data = {'z': res[6], 'r': res[7]})
-    df.to_csv('z_r_%s.csv' % height)
+    df = pd.DataFrame(data = {'z': z, 'r': r})
+    df.to_csv(z2r_csv_filename)
 
 
 if __name__=="__main__":
     start = time.time()
-    
     main(number_of_cores, height)
-
     end = time.time()
-    print("Running time: ", end - start, "s")
+    
+    f = open(output_filename, 'w')
+    print("Running time: ", end - start, "s", file=f)
