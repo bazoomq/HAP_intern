@@ -1,35 +1,51 @@
 from scipy.special import hyp2f1
-import argparse
 import math
-
+import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--number_of_cores", help="how many cores to use for multiproccessing", type=int)
-parser.add_argument("--height", help="height of balloon", type=int)
+parser.add_argument("--height", help="height of the balloon", type=int)
+parser.add_argument('--input_cone_pumpkin', type=argparse.FileType('r'), help='input file path for cone-pumpkin conjugation algorithm')
+parser.add_argument('--output_cone_pumpkin', type=argparse.FileType('w'), help='output file path for cone-pumpkin conjugation algorithm')
+parser.add_argument('--input', type=argparse.FileType('r'), help='input file path for main algorithm')
+parser.add_argument('--output', type=argparse.FileType('w'), help='output file path for main algorithm')
 args = parser.parse_args()
+
 number_of_cores = args.number_of_cores
-h = args.height
+height = args.height
+input_cone_pumpkin = args.input_cone_pumpkin
+output_cone_pumpkin = args.output_cone_pumpkin
+input = args.input
+output = args.output
 
-g = 9.8065
-m_payload = 11.922531663
-L0 = m_payload * g
-wp = 0.229158
-rp_max = 6.122831
-l = 2 * hyp2f1(1/4, 1/2, 5/4, 1) * rp_max
-ds = 0.001
-R = 8314.462
-mu_air = 28.966
-xmu_air = R / mu_air
-mu_gas = 4
-dT_gas = 0
-Cx = 0.47
-S0 = 0.739668778 * math.sqrt(math.pi) * rp_max
-V_max = 1.21852421611856 * S0 ** 3 
+ds = 0.002 # system integration step
+Cx = 0.47 # balloon drag coefficient (determined by the special algorithm)
 
-m_b = 8.646213297
-m_gas = 3.491565771
+wp = 0.229158 # pumpkin shape balloon film weight density 
+rp_max = 6.122831782671 # radius of fully the inflated balloon pumpkin (m)
+l = 2 * hyp2f1(1/4, 1/2, 5/4, 1) * rp_max # maximum core length (m)
+
+g = 9.8065 # free fall acceleration at release location (m/s^2)
+m_payload = 11.922531663 # payload mass (kg)
+L0 = m_payload * g # payload weight (N)
+m_b = 8.646213297 # balloon mass (kg)
+m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
+
+R = 8314.462 # gas constant (J/K/mol*1000)
+mu_air = 28.966 # air molar mass (g)
+xmu_air = R / mu_air # R/mu_air ratio for air (P = (rho/mu)RT)
+mu_gas = 4 # LTA gas molar mass (g)
+dT_gas = 0 # additional temperature of the LTA gas due to greenhouse effect (K)
+
+k_Sp = 0.739668778 # coefficient for meridian length calculation
+k_S = k_Sp * math.sqrt(math.pi) 
+k_Vp = 1.21852421611857 # coefficient for design pumpkin shape volume calculation
+k_V = 2.74581225 
+s0_b = k_S * rp_max # meridian length of the balloon from pole to equator (m)
+V_max = k_Vp * s0_b ** 3 # design volume of the balloon fully inflated to its pumpkin shape (m^3)
 
 
+# Standard Atmosphere
 Hatm = [0,
   500,
   1000,
@@ -78,7 +94,7 @@ Patm = [101330,
   1616,
   889,
   499]
-Tatm =[
+Tatm = [
   288.2,
   284.9,
   281.7,

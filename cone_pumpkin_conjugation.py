@@ -1,22 +1,7 @@
 from math import sqrt, pi, asin
 from scipy.special import hyp2f1, ellipkinc
 import pandas as pd
-import argparse
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--input', type=argparse.FileType('r'), help='input file path')
-parser.add_argument('--output', type=argparse.FileType('w'), help='output file path')
-args = parser.parse_args()
-input = args.input
-output = args.output
-
-
-k_V = 2.7458122499512 # coefficient of pumpkin shape volume
-k_Sp = 0.739668778  # coefficient of pumpkin shape area
-k_S = k_Sp * sqrt(pi) 
-R_b = 6.122831782671 # radius of fully the inflated balloon pumpkin (m)
-So_b = k_S * R_b
+from params import *
 
 
 def volume_cone_pumpkin(eps):
@@ -29,9 +14,9 @@ def volume_cone_pumpkin(eps):
     :param eps: epsilon = x / Rx, where Rx is radius of balloon 
     :return: volume and radius of the cone-pumpkin shape balloon
     """
-    f_V = pi / 3 * eps / sqrt(1 - eps ** 4) - ellipkinc(asin(eps), -1) + k_V
+    f_V = pi / 3 * (eps / sqrt(1 - eps ** 4) - ellipkinc(asin(eps), -1)) + k_V
     f_S = eps / sqrt(1 - eps ** 4) + 2 * k_S - hyp2f1(1/2, 1/4, 5/4, eps ** 4) * eps
-    Rx = 2 * So_b / f_S
+    Rx = 2 * s0_b / f_S
     V = f_V * Rx ** 3
     
     return V, Rx
@@ -75,13 +60,13 @@ def calculation_from_file(input, output):
     :return: 
     """
     df = pd.DataFrame(columns=['epsilon', 'radius of the balloon', 'x of cone', 'height of cone'], dtype=object)
-    df.to_csv(output, index=False)
+    df.to_csv(output_cone_pumpkin, index=False)
 
-    volume_arr = pd.read_csv(input).values
+    volume_arr = pd.read_csv(input_cone_pumpkin).values
     for i in volume_arr:
         eps, Rx, x_cone, h_cone = radius_cone_pumpkin(i)
         new_row = pd.DataFrame([[eps, Rx, x_cone, h_cone]]) 
-        new_row.to_csv(output, mode='a', index=False, header=False) 
+        new_row.to_csv(output_cone_pumpkin, mode='a', index=False, header=False) 
     
     return
 
@@ -89,7 +74,7 @@ def calculation_from_file(input, output):
 if __name__=="__main__":
     """
     how to use: 
-    python cone_pumpkin_conjugation.py --input INPUT_FILE_PATH --output OUTPUT_FILE_PATH
+    python cone_pumpkin_conjugation.py --input_cone_pumpkin INPUT_FILE_PATH --output_cone_punpkin OUTPUT_FILE_PATH
     """
-    calculation_from_file(input, output)
+    calculation_from_file(input_cone_pumpkin, output_cone_pumpkin)
     

@@ -1,15 +1,15 @@
 import time
 import numpy as np
 from matplotlib import pyplot as plt
-from solve import Solve, b
+from solve import buoyancy
 from density import density
 from params import *
 from theta0_a import theta0_a
 import pandas as pd
 
 
-def main(number_of_cores, h):
-    if h < 21500:
+def main(number_of_cores, height):
+    if height < 21500:
         theta0_max = 25
         theta0_min = 0
         a_max = 16
@@ -24,26 +24,24 @@ def main(number_of_cores, h):
         
     number_of_steps_theta0 = 90
 
-    tol_rmax = 1e-2
-    tol_mgas = 1e-2
-
+    rmax_tol = 1e-2
+    mgas_tol = 1e-2
+    velocity_tol = 1e-2
     
     velocity = 0  
     velocity_output = 10
-    velocity_tollerance = 1e-2
-    m_gas_out = 0
-
+    m_gas_output = 0
     
-    while abs(velocity - velocity_output) > velocity_tollerance or abs(m_gas_out - m_gas) > tol_mgas:
+    while abs(velocity - velocity_output) > velocity_tol or abs(m_gas_output - m_gas) > mgas_tol:
         velocity = velocity_output
-        m_gas = m_gas_out
+        m_gas = m_gas_output
 
         print("velocity = ", velocity)
         rmax = rp_max
         rmax_new = 0
         count_rmax = 0
         
-        while rmax - rmax_new > tol_rmax:
+        while rmax - rmax_new > rmax_tol:
             if rmax_new != 0:
                 rmax = rmax_new
 
@@ -62,7 +60,7 @@ def main(number_of_cores, h):
                 res = theta0_a([theta0_max, theta0_min, a_max, a_min, theta_step, a_step], [theta_tol, r_tol], rmax, velocity, number_of_cores)
                 theta0_max, theta0_min = res[0] - 10 / 2 ** i, res[0] + 10 / 2 ** i
 
-                if h < 21500:
+                if height < 21500:
                     a_max, a_min = res[1] - 2 / 2 ** i, res[1] + 2 / 2 * i    
                 else:
                     a_max, a_min = res[1] - 50 / 2 ** i, res[1] + 50 / 2 * i
@@ -77,33 +75,34 @@ def main(number_of_cores, h):
         for i in range(2, len(res[7])):
             dV_i = np.pi / 3 * ds * np.cos(res[8][i - 1]) * (res[7][i - 1] ** 2 + res[7][i - 1] * res[7][i] + res[7][i] ** 2)
             V += dV_i
-            dm_i = (density(h)[1] + b(h)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density(h)[2]) 
+            dm_i = (density(height)[1] + buoyancy(height)*(res[6][i] - res[1])) * dV_i * mu_gas / (R * density(height)[2]) 
             m_gas_out += dm_i
             
         
         theta0, a = res[0], res[1]
         Fg = (m_payload + m_b + m_gas) * g
-        Fa = density(h)[0][0] * V * g
+        Fa = density(height)[0][0] * V * g
         
-        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(h)[0][0] * math.pi * rmax ** 2)))
-        F_drag = -Cx * (density(h)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(height)[0][0] * math.pi * rmax ** 2)))
+        F_drag = -Cx * (density(height)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
         dF = (Fa - Fg) + F_drag
 
         
         
     theta0, a = res[0], res[1]
     Fg = (m_payload + m_b + m_gas) * g
-    Fa = density(h)[0][0] * V * g
+    Fa = density(height)[0][0] * V * g
     
-    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(h)[0][0] * math.pi * rmax ** 2)))
-    F_drag = -Cx * (density(h)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * density(height)[0][0] * math.pi * rmax ** 2)))
+    F_drag = -Cx * (density(height)[0][0] * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
     dF = (Fa - Fg) + F_drag
 
-    print("__________________________________")
-    print("____________RESULTS_______________")
-    print("____________h = ", h, "____________")
+    filename = 'result_output_for_altitude_%d' % height
+    f = open(filename, 'w')
 
-    print("theta0: ", theta0, ", a: ", a)
+    print("_______________________height = ", height, "_______________________", file=f)
+
+    print("theta0: ", theta0, ", a: ", a, file=f)
     print("Total lost (for theta0 and a): ", res[5])
     print("r max: ", res[4])
     print("Last theta: ", np.degrees(res[2]), ", Last R: ", res[3])
@@ -118,17 +117,16 @@ def main(number_of_cores, h):
     plt.plot(res[6], res[7])
     # plt.text(0.5, 0.5, 'height: {}, velocity: {}'.format(h, round(velocity, 3)))
     # plt.text(0.5, 0.2, 'theta0: {}, a: {}, volume: {}'.format(round(theta0, 4), round(a, 3), round(V, 3)))
-    plt.savefig('height_%s.svg' % h)
-
-    d = {'z': res[6], 'r': res[7]}
-    df = pd.DataFrame(data = d)
-    df.to_csv('z_r_%s.csv' % h)
+    plt.savefig('height_%s.svg' % height)
+ 
+    df = pd.DataFrame(data = {'z': res[6], 'r': res[7]})
+    df.to_csv('z_r_%s.csv' % height)
 
 
 if __name__=="__main__":
     start = time.time()
     
-    main(number_of_cores, h)
+    main(number_of_cores, height)
 
     end = time.time()
     print("Running time: ", end - start, "s")
