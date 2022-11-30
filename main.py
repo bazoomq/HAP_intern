@@ -5,6 +5,7 @@ from solve import Solve, b
 from density import density
 from params import *
 from theta0_a import theta0_a
+import pandas as pd
 
 
 def main(number_of_cores, h):
@@ -23,15 +24,16 @@ def main(number_of_cores, h):
         
     number_of_steps_theta0 = 90
 
-    tol_rmax = 1e-1
-    tol_mgas = 1e-1
+    tol_rmax = 1e-2
+    tol_mgas = 1e-2
 
-    init_velocity = 1  
-    velocity = init_velocity  
-    velocity_output = 3
-    velocity_tollerance = 1e-1
+    
+    velocity = 0  
+    velocity_output = 10
+    velocity_tollerance = 1e-2
     m_gas_out = 0
-    m_gas = 3.491565771
+
+    
     while abs(velocity - velocity_output) > velocity_tollerance or abs(m_gas_out - m_gas) > tol_mgas:
         velocity = velocity_output
         m_gas = m_gas_out
@@ -48,8 +50,7 @@ def main(number_of_cores, h):
             number_of_recurse = 5
             for i in range(number_of_recurse):
                 print('r_max = ', rmax, ', DEPTH ', i)
-                # print(theta_max, theta_min)
-                # print(a_max, a_min)
+                
                 theta_tol = 3 / (1.2)**i
                 if i <= 5:
                     r_tol = 2 / 2 ** i 
@@ -118,6 +119,10 @@ def main(number_of_cores, h):
     # plt.text(0.5, 0.5, 'height: {}, velocity: {}'.format(h, round(velocity, 3)))
     # plt.text(0.5, 0.2, 'theta0: {}, a: {}, volume: {}'.format(round(theta0, 4), round(a, 3), round(V, 3)))
     plt.savefig('height_%s.svg' % h)
+
+    d = {'z': res[6], 'r': res[7]}
+    df = pd.DataFrame(data = d)
+    df.to_csv('z_r_%s.csv' % h)
 
 
 if __name__=="__main__":
