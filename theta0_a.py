@@ -3,10 +3,15 @@ from matplotlib import pyplot as plt
 import concurrent.futures
 from solve import Solve
 from params import *
+import gc
 
 
 def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
     grid = []
+
+    print("a_max: ", a_max,"a_max: ", a_min,"step_a: ", step_a, "theta_max: ",  
+    theta_max, "theta_min: ", theta_min, "step_theta: ", step_theta)
+
     for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
         for j in np.arange(a_max, a_min, -step_a):
             grid.append([i, j])
@@ -36,10 +41,11 @@ def theta0_a(grid_params, frame, rmax, velocity, number_of_cores):
                     optimal_z = z
                     optimal_r = r
                     optimal_theta = theta
-                    print("theta: ", np.degrees(theta[-1]), " theta_tolerance: ", theta_tol, " r: ", r[-1], " r_tol: ", r_tol)
+                    print("theta: ", np.degrees(theta[-1]), " theta_tol: ", theta_tol, " r: ", r[-1], " r_tol: ", r_tol)
                     print("theta0: ", np.degrees(theta0), "a: ", a)
-            else:
-                continue
+    
     res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
     print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
+    del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
+    gc.collect()
     return res
