@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python main.py --number_of_cores 14 --height 24000
+python main.py --number_of_cores 14 --height 15000

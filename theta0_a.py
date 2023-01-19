@@ -3,14 +3,19 @@ from matplotlib import pyplot as plt
 import concurrent.futures
 from solve import Solve
 from params import *
-import gc
 
 
 def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
+    """
+    getting a grid to search theta0 and a
+    :param theta_max, theta_min, a_max, a_min: searching boundaries
+    :param step_theta, step_a: grid step  
+    :return: grid of theta and a 
+    """
     grid = []
 
-    print("a_max: ", a_max,"a_max: ", a_min,"step_a: ", step_a, "theta_max: ",  
-    theta_max, "theta_min: ", theta_min, "step_theta: ", step_theta)
+    #print("a_max: ", a_max,"a_min: ", a_min,"step_a: ", step_a, "theta_max: ",  
+    #theta_max, "theta_min: ", theta_min, "step_theta: ", step_theta)
 
     for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
         for j in np.arange(a_max, a_min, -step_a):
@@ -18,34 +23,54 @@ def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
     return grid
 
 
-def theta0_a(grid_params, frame, rmax, velocity, number_of_cores):        
+def theta0_a(grid_params, rmax, velocity, number_of_cores):
+    """
+
+    :param grid_params: list of grid parameters: searching boundaries and grid step (for theta0 and a) 
+    :param rmax: current maximum radius of the balloon
+    :param velocity: current velocity (input)
+    :number_of_cores: the number of cores that are involved in parallel computing
+    :return: result array: theta0, a, theta (theta_last) and radius (r_last) on the top of the balloon, 
+    """      
+
     theta0_max, theta0_min, a_max, a_min, theta_step, a_step = grid_params
-    theta_tol, r_tol = frame
     grid = get_grid(theta0_max, theta0_min, a_max, a_min, theta_step, a_step)
-    optimal_z, optimal_r, loss_min = [], [], 100
+    optimal_z, optimal_r, loss_min = [], [], 1000
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
+        print(len(results))
         results = np.array(results)
         count = 0
+
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
             theta, _, z, r = f.result()
-        
-            if  -90 - theta_tol < np.degrees(theta[-1]) < -90 + theta_tol and -r_tol < r[-1] < r_tol:                
-                loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + r[-1] ** 2)
-                if loss < loss_min:
-                    loss_min = loss
-                    theta0, a = results[i, 1]
-                    theta_last = theta[-1]
-                    r_last = r[-1]
-                    optimal_z = z
-                    optimal_r = r
-                    optimal_theta = theta
-                    print("theta: ", np.degrees(theta[-1]), " theta_tol: ", theta_tol, " r: ", r[-1], " r_tol: ", r_tol)
-                    print("theta0: ", np.degrees(theta0), "a: ", a)
-    
+
+            # sgn_arr = []
+            # for i in range(2, len(theta)):
+            #     count = 0
+            #     if np.sign(theta[i] - theta[i - 1]) + np.sign(theta[i-1] - theta[i - 2]) == 0:
+            #         count += 1
+
+            # if count > 1:
+            #     continue
+     
+            loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + (r[-1] / l / 2) ** 2)
+            if loss < loss_min:           
+                loss_min = loss
+                theta0, a = results[i, 1]
+                theta_last = theta[-1]
+                r_last = r[-1]
+                optimal_z = z
+                optimal_r = r
+                optimal_theta = theta
+                #print("theta0: ", np.degrees(theta0), "a: ", a)
+                if ((theta_last + 90) < 1e-4) and (r_last < 1e-4):
+                    print("break")
+                    break
+
     res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
-    print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
-    del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
-    gc.collect()
+    #print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
+    #del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
+
     return res

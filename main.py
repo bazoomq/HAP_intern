@@ -6,7 +6,6 @@ from density import density
 from params import *
 from theta0_a import theta0_a
 import pandas as pd
-import gc
 
 
 def initialize(height):
@@ -16,27 +15,33 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 25
+        theta0_max = 20
         theta0_min = 0
         a_max = 16
-        a_min = 5
-        number_of_steps_a = 50
-        number_of_steps_theta0 = 250
+        a_min = 0
+        number_of_steps_a = 80
+        number_of_steps_theta0 = 100
     else:
         theta0_max = 90
         theta0_min = 20
         a_max = 5.1
         a_min = -400
         number_of_steps_a = 100
-        number_of_steps_theta0 = 700
+        number_of_steps_theta0 = 70
 
-    return a_min, a_max, number_of_steps_a, theta0_min,theta0_max, number_of_steps_theta0
+    return a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0
 
 
 def main(number_of_cores, height):
+    """
+    finding optimal solution optimizing maximal radius (r_max) and mass of gas (m_gas)
+    :param: number_of_cores - number of cores which we use for calculations
+    :param: height - current altitude (m)
+    :return: results in txt file, data in csv files and plots
+    """
     rho_atm, _, P_atm, T_gas = density(height)
 
-    a_min, a_max, number_of_steps_a, theta0_min,theta0_max, number_of_steps_theta0 = initialize(height)
+    a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
     rmax_tol = 1e-2
     mgas_tol = 1e-2
     velocity_tol = 1e-2
@@ -47,10 +52,10 @@ def main(number_of_cores, height):
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
     while abs(m_gas_output - m_gas) > mgas_tol:
+        print("velocity_output", velocity_output, "velocity = ", velocity, "difference = ", abs(velocity_output - velocity))
         velocity = velocity_output
-        m_gas = m_gas_output
-        gc.collect()
-        print("velocity = ", velocity)
+        print("m gas output = ", m_gas_output, "m gas = ", m_gas, "difference = ", abs(m_gas_output - m_gas))
+        # m_gas = m_gas_output
         rmax = rp_max
         rmax_new = 0
         count_rmax = 0
@@ -63,32 +68,27 @@ def main(number_of_cores, height):
             number_of_recurse = 3
             a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
 
+            #plt.figure()
             for i in range(number_of_recurse):
                 print('r_max = ', rmax, ', DEPTH: ', i)
-                
-                theta_tol = 3 / (1.2)**i
-                if i <= 5:
-                    r_tol = 2 / 2 ** i 
-                else:
-                    r_tol = 1 / 10**2
 
-                theta_step = (theta0_max - theta0_min) / number_of_steps_theta0
+                theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
                 a_step = (a_max - a_min) / number_of_steps_a
+                
+                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta0_step, a_step], rmax, velocity, number_of_cores)
 
-                # theta0 in degrees
-                print("*"*20,"starting theta loop", "*"*20 )
-                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta_step, a_step], 
-                                                                                        [theta_tol, r_tol], rmax, velocity, number_of_cores)
-                print("*"*20,"end theta loop", "*"*20 )
-
-                theta0_max, theta0_min = theta0 + theta_step + epsilon, theta0 - theta_step - epsilon
-
+                theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
                 a_max, a_min = a + a_step + epsilon, a - a_step - epsilon 
-               
+
+                #plt.plot(z, r)
+
+            
+            #plt.savefig('velocity_%s_rmax_%s.svg' % (str(round(velocity, 2)), str(round(rmax, 4))))
+
             rmax_new = max_radius 
             count_rmax += 1
 
-        print("Iterations for finding optimal rmax: ", count_rmax)
+        #print("Iterations for finding optimal rmax: ", count_rmax)
 
         volume = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0
@@ -114,7 +114,7 @@ def main(number_of_cores, height):
     F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
     dF = (Fa - Fg) + F_drag
 
-    f = open(output_filename, 'w')
+    f = open('%s' % output_filename, 'w')
 
     print("_______________________height = ", height, "_______________________", file=f)
     print("theta0: ", theta0, ", a: ", a, file=f)
@@ -131,12 +131,10 @@ def main(number_of_cores, height):
     print("Difference between input and output velocities: ", velocity - velocity_output, file=f)
     
     plt.plot(z, r)
-    # plt.text(0.5, 0.5, 'height: {}, velocity: {}'.format(height, round(velocity, 3)))
-    # plt.text(0.5, 0.2, 'theta0: {}, a: {}, volume: {}'.format(round(theta0, 4), round(a, 3), round(volume, 3)))
-    plt.savefig(plot_filename)
+    plt.savefig('%s' % plot_filename)
  
     df = pd.DataFrame(data = {'z': z, 'r': r})
-    df.to_csv(z2r_csv_filename)
+    df.to_csv('%s' % z2r_csv_filename)
 
 
 if __name__=="__main__":
@@ -148,5 +146,5 @@ if __name__=="__main__":
     main(number_of_cores, height)
     end = time.time()
     
-    f = open(output_filename, 'a')
+    f = open('%s' % output_filename, 'a')
     print("Running time: ", end - start, "s", file=f)
