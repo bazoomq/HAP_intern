@@ -38,8 +38,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
     optimal_z, optimal_r, loss_min = [], [], 1000
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
-        print(len(results))
-        results = np.array(results)
+        results = np.array(results)    
         count = 0
 
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
@@ -55,7 +54,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
             # if count > 1:
             #     continue
      
-            loss = np.sqrt(((np.pi / 2 + theta[-1]) / (np.pi / 2)) ** 2 + (r[-1] / l / 2) ** 2)
+            loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1] / l / 2) ** 2)
             if loss < loss_min:           
                 loss_min = loss
                 theta0, a = results[i, 1]
@@ -64,8 +63,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
                 optimal_z = z
                 optimal_r = r
                 optimal_theta = theta
-                #print("theta0: ", np.degrees(theta0), "a: ", a)
-                if ((theta_last + 90) < 1e-4) and (r_last < 1e-4):
+                if (abs(np.degrees(theta_last) + 90) < 1e-2) and (abs(r_last) < 1e-3):
                     print("break")
                     break
 

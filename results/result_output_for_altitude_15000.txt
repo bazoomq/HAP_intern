@@ -1,14 +1,14 @@
 _______________________height =  15000 _______________________
-theta0:  9.211918431999914 , a:  6.8365292968750495
-Maximum radius:  3.873646538942584
-Last theta:  -92.37318382039498 , Last R:  -0.005431735988600028
-Total lost (for theta0 and a):  0.026922343439375666
+theta0:  1.2805440000000012 , a:  8.33437499999999
+Maximum radius:  3.140881056118052
+Last theta:  -90.06535887412078 , Last R:  -0.3183146747906047
+Total lost (for theta0 and a):  0.009940179762877472
 ___________________________________________________________________
-Volume of the balloon:  235.9013172524665
-Difference between m_gas and calculated m_gas:  -0.0011002505820263409
-Difference betweend Fa and Fg:  186.51932533613012
+Volume of the balloon:  127.11703023909571
+Difference between m_gas and calculated m_gas:  -0.07262734734086518
+Difference betweend Fa and Fg:  6.787015023006717
 Difference between all forces {(Fa - Fg) + F_drag}:  0.0
-Input velocity of the balloon:  13.539551942415926
-Output velocity of the balloon:  14.191243266354194
-Difference between input and output velocities:  -0.6516913239382678
-Running time:  747.0271830558777 s
+Input velocity of the balloon:  2.1291116576166527
+Output velocity of the balloon:  2.4362788184901403
+Difference between input and output velocities:  -0.3071671608734876
+Running time:  2465.632894515991 s

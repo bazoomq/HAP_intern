@@ -15,10 +15,10 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 20
+        theta0_max = 8
         theta0_min = 0
-        a_max = 16
-        a_min = 0
+        a_max = 10
+        a_min = 5
         number_of_steps_a = 80
         number_of_steps_theta0 = 100
     else:
@@ -43,19 +43,16 @@ def main(number_of_cores, height):
 
     a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
     rmax_tol = 1e-2
-    mgas_tol = 1e-2
-    velocity_tol = 1e-2
+    mgas_tol = 1e-1
     
-    velocity = 0  
-    velocity_output = 10
+    velocity = 4  
+    
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
-    while abs(m_gas_output - m_gas) > mgas_tol:
-        print("velocity_output", velocity_output, "velocity = ", velocity, "difference = ", abs(velocity_output - velocity))
-        velocity = velocity_output
-        print("m gas output = ", m_gas_output, "m gas = ", m_gas, "difference = ", abs(m_gas_output - m_gas))
-        # m_gas = m_gas_output
+    delta_mgas = m_gas - m_gas_output
+
+    while abs(delta_mgas) > mgas_tol:
         rmax = rp_max
         rmax_new = 0
         count_rmax = 0
@@ -70,7 +67,7 @@ def main(number_of_cores, height):
 
             #plt.figure()
             for i in range(number_of_recurse):
-                print('r_max = ', rmax, ', DEPTH: ', i)
+                #print('r_max = ', rmax, ', DEPTH: ', i)
 
                 theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
                 a_step = (a_max - a_min) / number_of_steps_a
@@ -105,6 +102,14 @@ def main(number_of_cores, height):
         velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax ** 2)))
         F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
         dF = (Fa - Fg) + F_drag    
+
+        delta_mgas =  m_gas - m_gas_output
+        delta_velocity = velocity - velocity_output
+
+        print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
+        print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
+
+        velocity = velocity - (delta_velocity / 2 )
         
 
     Fg = (m_payload + m_b + m_gas) * g
