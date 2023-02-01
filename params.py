@@ -20,9 +20,9 @@ output_cone_pumpkin = args.output_cone_pumpkin
 input = args.input
 output = args.output
 
-output_filename = os.path.join('results', 'result_output_for_altitude_%s.txt' % height)
-z2r_csv_filename = os.path.join('results', 'z2r_%s.csv' % height)
-plot_filename = os.path.join('plots', 'height_%s.svg' % height)
+output_filename = os.path.join('results', 'bisection_result_output_for_altitude_%s.txt' % height)
+z2r_csv_filename = os.path.join('results', 'bisection_z2r_%s.csv' % height)
+plot_filename = os.path.join('plots', 'bisection_height_%s.svg' % height)
 
 ds = 0.002 # system integration step
 Cx = 0.47 # balloon drag coefficient (determined by the special algorithm)

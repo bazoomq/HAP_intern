@@ -10,26 +10,22 @@ import pandas as pd
 
 def initialize(height):
     """ 
-    defining initial parameters for a and theta0 grid
+    defining initial parameters for a and theta0
     :param height: current altitude
-    :return: min and max values and step of grid  
+    :return: min and max values  
     """
     if height < 21500:
-        theta0_max = 8
+        theta0_max = 2
         theta0_min = 0
         a_max = 10
-        a_min = 5
-        number_of_steps_a = 80
-        number_of_steps_theta0 = 100
+        a_min = 7
     else:
         theta0_max = 90
         theta0_min = 20
-        a_max = 5.1
+        a_max = 5
         a_min = -400
-        number_of_steps_a = 100
-        number_of_steps_theta0 = 70
 
-    return a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0
+    return a_min, a_max, theta0_min, theta0_max
 
 
 def main(number_of_cores, height):
@@ -41,7 +37,7 @@ def main(number_of_cores, height):
     """
     rho_atm, _, P_atm, T_gas = density(height)
 
-    a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
+    a_min, a_max, theta0_min, theta0_max = initialize(height)
     rmax_tol = 1e-2
     mgas_tol = 1e-1
     
@@ -50,42 +46,19 @@ def main(number_of_cores, height):
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
-    delta_mgas = m_gas - m_gas_output
-
+    delta_mgas = m_gas - m_gas_output    
     while abs(delta_mgas) > mgas_tol:
         rmax = rp_max
         rmax_new = 0
-        count_rmax = 0
-        epsilon = np.finfo(float).eps # very small number
         
         while rmax - rmax_new > rmax_tol:
             if rmax_new != 0:
                 rmax = rmax_new
 
-            number_of_recurse = 3
-            a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-
-            #plt.figure()
-            for i in range(number_of_recurse):
-                #print('r_max = ', rmax, ', DEPTH: ', i)
-
-                theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
-                a_step = (a_max - a_min) / number_of_steps_a
-                
-                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta0_step, a_step], rmax, velocity, number_of_cores)
-
-                theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
-                a_max, a_min = a + a_step + epsilon, a - a_step - epsilon 
-
-                #plt.plot(z, r)
-
-            
-            #plt.savefig('velocity_%s_rmax_%s.svg' % (str(round(velocity, 2)), str(round(rmax, 4))))
+            theta0, a, theta_last, r_last, max_radius, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min], rmax, velocity, number_of_cores)
 
             rmax_new = max_radius 
-            count_rmax += 1
-
-        #print("Iterations for finding optimal rmax: ", count_rmax)
+            
 
         volume = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0
@@ -124,8 +97,7 @@ def main(number_of_cores, height):
     print("_______________________height = ", height, "_______________________", file=f)
     print("theta0: ", theta0, ", a: ", a, file=f)
     print("Maximum radius: ", max_radius, file=f)
-    print("Last theta: ", np.degrees(theta_last), ", Last R: ", r_last, file=f)
-    print("Total lost (for theta0 and a): ", loss, file=f)
+    print("Last theta: ", theta_last, ", Last R: ", r_last, file=f)
     print("___________________________________________________________________", file=f)
     print("Volume of the balloon: ", volume, file=f)
     print("Difference between m_gas and calculated m_gas: ", m_gas_output - m_gas, file=f)
