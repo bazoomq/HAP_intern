@@ -38,27 +38,17 @@ def main(number_of_cores, height):
     rho_atm, _, P_atm, T_gas = density(height)
 
     a_min, a_max, theta0_min, theta0_max = initialize(height)
-    rmax_tol = 1e-2
+    
     mgas_tol = 1e-1
     
-    velocity = 4  
+    velocity = 3  
     
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
     delta_mgas = m_gas - m_gas_output    
     while abs(delta_mgas) > mgas_tol:
-        rmax = rp_max
-        rmax_new = 0
-        
-        while rmax - rmax_new > rmax_tol:
-            if rmax_new != 0:
-                rmax = rmax_new
-
-            theta0, a, theta_last, r_last, max_radius, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min], rmax, velocity, number_of_cores)
-
-            rmax_new = max_radius 
-            
+        theta0, a, theta_last, r_last, max_radius, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min], velocity)
 
         volume = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0
@@ -84,6 +74,7 @@ def main(number_of_cores, height):
 
         velocity = velocity - (delta_velocity / 2 )
         
+    rmax = max_radius
 
     Fg = (m_payload + m_b + m_gas) * g
     Fa = rho_atm * volume * g
