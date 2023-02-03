@@ -54,7 +54,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
             # if count > 1:
             #     continue
      
-            loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1] / l / 2) ** 2)
+            loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1] / rp_max) ** 2) # rp_max - maximum possible radius of the balloon
             if loss < loss_min:           
                 loss_min = loss
                 theta0, a = results[i, 1]
