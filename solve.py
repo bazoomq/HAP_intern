@@ -4,6 +4,7 @@ from scipy.integrate import solve_ivp
 from density import density
 from calculate_rp import get_sr
 from params import *
+from barometric import barometric
 
 
 def buoyancy(height):
@@ -36,8 +37,8 @@ def Solve(params, rmax, velocity):
     :param velocity: velocity of the natural shape balloon
     :return: solution of a system of the differential equations: lists of theta, T, z, r respectively
     """
-    theta0, a = params
-    ro_atm = density(height)[0]
+    theta0, p0 = params
+    rho_atm = density(height)[0]
     rs, s_half = get_sr(rp_max) # just gets lists of s and r for half of the balloon's core length
     f = interp1d(s_half, rs, kind='cubic') # interpolate r's in all points on that interval [0, l/2]
     
@@ -49,7 +50,7 @@ def Solve(params, rmax, velocity):
             rp = f(l - t)
         theta, T, z, r = y
         
-        p = buoyancy(height) * (z - a) # differential pressure of the balloon, a is determined by the algorithm
+        p  = barometric(height, p0)[0] # differential pressure of the balloon, determined by the barometric approach
         sin = np.sin(theta)
         cos = np.cos(theta)
         return [
@@ -60,7 +61,7 @@ def Solve(params, rmax, velocity):
         ]
     
     # boundary conditions (theta0, T0, z0, r0), theta0 is determined by the algorithm
-    T0 = (L0 + Cx * ro_atm * velocity * abs(velocity) * math.pi * rmax**2 / 2) / np.cos(theta0)
+    T0 = (L0 + Cx * rho_atm * velocity * abs(velocity) * math.pi * rmax**2 / 2) / np.cos(theta0)
     z0, r0 = 0, 0 
 
     sol = solve_ivp(func, t_span=[0, l], y0=[theta0, T0, z0, r0], t_eval=np.arange(0, l, ds)) 
