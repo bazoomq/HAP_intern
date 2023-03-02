@@ -3,6 +3,8 @@ from matplotlib import pyplot as plt
 import concurrent.futures
 from solve import Solve
 from params import *
+from plots import plotting
+import pandas as pd
 
 
 def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
@@ -36,11 +38,13 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
     theta0_max, theta0_min, a_max, a_min, theta_step, a_step = grid_params
     grid = get_grid(theta0_max, theta0_min, a_max, a_min, theta_step, a_step)
     optimal_z, optimal_r, loss_min = [], [], 1000
+    # X = np.linspace(theta0_min, theta0_max, 100)
+    # Y = np.linspace(a_min, a_max, 80)
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
-        results = np.array(results)    
+        results = np.array(results)
         count = 0
-
+        loss_arr, theta0_arr, a_arr = [], [], []
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
             theta, _, z, r = f.result()
@@ -53,22 +57,26 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
 
             # if count > 1:
             #     continue
-     
-            loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1] / rp_max) ** 2) # rp_max - maximum possible radius of the balloon
+            
+            loss = np.log(np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1]) ** 2)) # rp_max - maximum possible radius of the balloon
+            loss_arr.append(loss)
+            theta0_, a_ = results[i, 1]
+            theta0_arr.append(np.degrees(theta0_))
+            a_arr.append(a_)
             if loss < loss_min:           
                 loss_min = loss
-                theta0, a = results[i, 1]
+                theta0, a = theta0_, a_
                 theta_last = theta[-1]
                 r_last = r[-1]
                 optimal_z = z
                 optimal_r = r
                 optimal_theta = theta
-                if (abs(np.degrees(theta_last) + 90) < 1e-2) and (abs(r_last) < 1e-3):
-                    print("break")
-                    break
-
+    
+    df = pd.DataFrame(data={"theta0": theta0_arr, "a": a_arr, "loss": loss_arr})
+    df.to_csv("file.csv", sep=',', index=False)
     res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
     #print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
     #del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
-
-    return res
+    
+    return res #, theta0_arr, a_arr, loss_arr
+    

@@ -1,12 +1,14 @@
 import time
 import numpy as np
 from matplotlib import pyplot as plt
-from solve import buoyancy
+from solve import buoyancy, Solve
 from density import density
 from params import *
-from theta0_a import theta0_a
+from grid_search import theta0_a
 import pandas as pd
+import warnings
 
+warnings.filterwarnings('ignore')
 
 def initialize(height):
     """ 
@@ -15,10 +17,10 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 8
+        theta0_max = 10
         theta0_min = 0
         a_max = 10
-        a_min = 5
+        a_min = 0
         number_of_steps_a = 80
         number_of_steps_theta0 = 100
     else:
@@ -42,10 +44,10 @@ def main(number_of_cores, height):
     rho_atm, _, P_atm, T_gas = density(height)
 
     a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-    rmax_tol = 1e-2
-    mgas_tol = 1e-1
+    rmax_tol = 1e-4
+    mgas_tol = 1e-2
     
-    velocity = 4  
+    velocity = 2.918
     
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
@@ -53,37 +55,52 @@ def main(number_of_cores, height):
     delta_mgas = m_gas - m_gas_output
 
     while abs(delta_mgas) > mgas_tol:
-        rmax = rp_max
-        rmax_new = 0
+        rmax_in = rp_max
+        rmax_out = 0
         count_rmax = 0
         epsilon = np.finfo(float).eps # very small number
-        
-        while rmax - rmax_new > rmax_tol:
-            if rmax_new != 0:
-                rmax = rmax_new
 
-            number_of_recurse = 3
+        #theta0, a = 1.2, 8.5
+
+        i = 0
+        while True:
+            
             a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
+            # print("R_max before = ", rmax)
+            # print("R max new = ", rmax_new)
+            # print("R_max after = ", rmax)
 
-            #plt.figure()
+            number_of_recurse = 2
             for i in range(number_of_recurse):
-                #print('r_max = ', rmax, ', DEPTH: ', i)
-
                 theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
                 a_step = (a_max - a_min) / number_of_steps_a
                 
-                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta0_step, a_step], rmax, velocity, number_of_cores)
-
+                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta0_step, a_step], rmax_in, velocity, number_of_cores)
+                
                 theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
                 a_max, a_min = a + a_step + epsilon, a - a_step - epsilon 
+            print("theta0: ", theta0, ", a: ", a)
+            # plt.plot(z, r)
+            # plt.savefig("after_grid%s.png" % i)
 
-                #plt.plot(z, r)
+            rmax_out = max_radius
 
+            while abs(rmax_out - rmax_in) > rmax_tol:
+                rmax_in = rmax_out
+
+                theta, _, z, r = Solve([theta0, a], rmax_in, velocity)
+                rmax_out = max(r)
+                
+            theta_last = theta[-1]
+            r_last = r[-1]
+            # plt. plot(z, r)
+            # plt.savefig("after_rmax%s.png" % i)
+
+            if (abs(np.degrees(theta_last) + 90) < 1e-3) and (abs(r_last) < 1e-3):
+                break
             
-            #plt.savefig('velocity_%s_rmax_%s.svg' % (str(round(velocity, 2)), str(round(rmax, 4))))
-
-            rmax_new = max_radius 
-            count_rmax += 1
+            print("last theta: ", np.degrees(theta_last), ", last r: ", r_last)
+            i+=1
 
         #print("Iterations for finding optimal rmax: ", count_rmax)
 
@@ -106,8 +123,8 @@ def main(number_of_cores, height):
         delta_mgas =  m_gas - m_gas_output
         delta_velocity = velocity - velocity_output
 
-        print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
-        print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
+        print("output velocity: ", velocity_output, ", input velocity: ", velocity, ", difference = ", abs(delta_velocity))
+        print("output m_gas = ", m_gas_output, ", input m_gas = ", m_gas, ", difference = ", abs(delta_mgas))
 
         velocity = velocity - (delta_velocity / 2 )
         

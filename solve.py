@@ -66,3 +66,12 @@ def Solve(params, rmax, velocity):
     sol = solve_ivp(func, t_span=[0, l], y0=[theta0, T0, z0, r0], t_eval=np.arange(0, l, ds)) 
 
     return sol.y
+
+
+# theta0, a = np.radians(13.3508353469666), 6.22633641503308
+# rmax = 4.12968808914836
+# velocity = 3.295
+# theta, T, z, r = Solve([theta0, a], rmax, velocity)
+
+# #print(theta)
+# print("theta_last = ", np.degrees(theta[-1]), "r_last = ", r[-1], "rmax_out = ", max(r))
