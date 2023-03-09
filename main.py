@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from solve import buoyancy
 from density import density
 from params import *
-from theta0_a import theta0_a
+from theta0_a import theta0_p0
 import pandas as pd
 
 
@@ -15,21 +15,21 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 8
+        theta0_max = 10
         theta0_min = 0
-        a_max = 10
-        a_min = 5
-        number_of_steps_a = 80
+        p0_max = 200
+        p0_min = -20
+        number_of_steps_p0 = 80
         number_of_steps_theta0 = 100
     else:
         theta0_max = 90
         theta0_min = 20
-        a_max = 5.1
-        a_min = -400
-        number_of_steps_a = 100
+        p0_max = 5.1
+        p0_min = -400
+        number_of_steps_p0 = 100
         number_of_steps_theta0 = 70
 
-    return a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0
+    return p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0
 
 
 def main(number_of_cores, height):
@@ -41,7 +41,7 @@ def main(number_of_cores, height):
     """
     rho_atm, _, P_atm, T_gas = density(height)
 
-    a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
+    p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
     rmax_tol = 1e-2
     mgas_tol = 1e-1
     
@@ -63,19 +63,19 @@ def main(number_of_cores, height):
                 rmax = rmax_new
 
             number_of_recurse = 3
-            a_min, a_max, number_of_steps_a, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
+            p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
 
             #plt.figure()
             for i in range(number_of_recurse):
-                #print('r_max = ', rmax, ', DEPTH: ', i)
+                print('r_max = ', rmax, ', DEPTH: ', i)
 
                 theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
-                a_step = (a_max - a_min) / number_of_steps_a
+                p0_step = (p0_max - p0_min) / number_of_steps_p0
                 
-                theta0, a, theta_last, r_last, max_radius, loss, z, r, theta = theta0_a([theta0_max, theta0_min, a_max, a_min, theta0_step, a_step], rmax, velocity, number_of_cores)
+                theta0, p0, theta_last, r_last, max_radius, loss, z, r, theta = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax, velocity, number_of_cores)
 
                 theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
-                a_max, a_min = a + a_step + epsilon, a - a_step - epsilon 
+                p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
 
                 #plt.plot(z, r)
 
@@ -122,7 +122,7 @@ def main(number_of_cores, height):
     f = open('%s' % output_filename, 'w')
 
     print("_______________________height = ", height, "_______________________", file=f)
-    print("theta0: ", theta0, ", a: ", a, file=f)
+    print("theta0: ", theta0, ", p0: ", p0, file=f)
     print("Maximum radius: ", max_radius, file=f)
     print("Last theta: ", np.degrees(theta_last), ", Last R: ", r_last, file=f)
     print("Total lost (for theta0 and a): ", loss, file=f)

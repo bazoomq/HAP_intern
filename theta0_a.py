@@ -5,12 +5,12 @@ from solve import Solve
 from params import *
 
 
-def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
+def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0):
     """
-    getting a grid to search theta0 and a
-    :param theta_max, theta_min, a_max, a_min: searching boundaries
-    :param step_theta, step_a: grid step  
-    :return: grid of theta and a 
+    getting a grid to search theta0 and p0
+    :param theta_max, theta_min, p0_max, p0_min: searching boundaries
+    :param step_theta, step_p0: grid step  
+    :return: grid of theta and p0 
     """
     grid = []
 
@@ -18,12 +18,12 @@ def get_grid(theta_max, theta_min, a_max, a_min, step_theta, step_a):
     #theta_max, "theta_min: ", theta_min, "step_theta: ", step_theta)
 
     for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
-        for j in np.arange(a_max, a_min, -step_a):
+        for j in np.arange(p0_max, p0_min, -step_p0):
             grid.append([i, j])
     return grid
 
 
-def theta0_a(grid_params, rmax, velocity, number_of_cores):
+def theta0_p0(grid_params, rmax, velocity, number_of_cores):
     """
 
     :param grid_params: list of grid parameters: searching boundaries and grid step (for theta0 and a) 
@@ -33,8 +33,8 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
     :return: result array: theta0, a, theta (theta_last) and radius (r_last) on the top of the balloon, 
     """      
 
-    theta0_max, theta0_min, a_max, a_min, theta_step, a_step = grid_params
-    grid = get_grid(theta0_max, theta0_min, a_max, a_min, theta_step, a_step)
+    theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step = grid_params
+    grid = get_grid(theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step)
     optimal_z, optimal_r, loss_min = [], [], 1000
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
@@ -44,7 +44,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
             theta, _, z, r = f.result()
-
+            print(i)
             # sgn_arr = []
             # for i in range(2, len(theta)):
             #     count = 0
@@ -57,7 +57,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
             loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1] / rp_max) ** 2) # rp_max - maximum possible radius of the balloon
             if loss < loss_min:           
                 loss_min = loss
-                theta0, a = results[i, 1]
+                theta0, p0 = results[i, 1]
                 theta_last = theta[-1]
                 r_last = r[-1]
                 optimal_z = z
@@ -67,7 +67,7 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
                     print("break")
                     break
 
-    res = np.array([np.degrees(theta0), a, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
+    res = np.array([np.degrees(theta0), p0, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
     #print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
     #del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
 

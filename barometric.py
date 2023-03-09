@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from params import *
 from density import density
 
@@ -17,12 +17,12 @@ def barometric(height, p0):
     dT_gas = 0
 
     p_gas_arr, p_air_arr, dp_arr = [], [], []
-    for i in range(0, l + ds, ds):
-        p_gas_i -= p_gas * mu_gas * g * ds / R / T_gas
-        p_air_i -= p_air * mu_air * g * ds / R / (T_gas + dT_gas)
-        dp_i = p_gas_i - p_air_i
+    for i in np.arange(0, l + ds, ds):
+        p_gas -= p_gas * mu_gas * g * ds / R / T_gas
+        p_air -= p_air * mu_air * g * ds / R / (T_gas + dT_gas)
+        dp = p_gas - p_air
 
-        p_gas_arr.append(p_gas_i)
+        p_gas_arr.append(p_gas)
         p_air_arr.append(p_air)
-        dp_arr.append(dp_i)
-    return p_gas_i, dp_i
+        dp_arr.append(dp)
+    return p_gas, dp
