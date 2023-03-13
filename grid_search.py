@@ -48,21 +48,21 @@ def theta0_a(grid_params, rmax, velocity, number_of_cores):
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
             theta, _, z, r = f.result()
-
-            # sgn_arr = []
-            # for i in range(2, len(theta)):
-            #     count = 0
-            #     if np.sign(theta[i] - theta[i - 1]) + np.sign(theta[i-1] - theta[i - 2]) == 0:
-            #         count += 1
-
-            # if count > 1:
-            #     continue
-            
-            loss = np.log(np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1]) ** 2)) # rp_max - maximum possible radius of the balloon
-            loss_arr.append(loss)
             theta0_, a_ = results[i, 1]
             theta0_arr.append(np.degrees(theta0_))
             a_arr.append(a_)
+            count = 0
+            for j in range(2, len(theta)):
+                if np.sign(theta[j] - theta[j - 1]) + np.sign(theta[j - 1] - theta[j - 2]) == 0:
+                    count += 1
+
+            if count > 1:
+                loss = -1
+                loss_arr.append(loss)
+                continue
+            
+            loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1]) ** 2) # rp_max - maximum possible radius of the balloon
+            loss_arr.append(loss)
             if loss < loss_min:           
                 loss_min = loss
                 theta0, a = theta0_, a_
