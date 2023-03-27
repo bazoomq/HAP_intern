@@ -1,10 +1,10 @@
 import time
 import numpy as np
 from matplotlib import pyplot as plt
-from solve import buoyancy
+from solve import Solve
 from density import density
 from params import *
-from theta0_a import theta0_p0
+from grid_search import theta0_p0
 import pandas as pd
 
 
@@ -17,8 +17,8 @@ def initialize(height):
     if height < 21500:
         theta0_max = 10
         theta0_min = 0
-        p0_max = 200
-        p0_min = -20
+        p0_max = -13
+        p0_min = -15
         number_of_steps_p0 = 80
         number_of_steps_theta0 = 100
     else:
@@ -53,54 +53,59 @@ def main(number_of_cores, height):
     delta_mgas = m_gas - m_gas_output
 
     while abs(delta_mgas) > mgas_tol:
-        rmax = rp_max
-        rmax_new = 0
-        count_rmax = 0
+        rmax_in = rp_max
+        rmax_out = 0
         epsilon = np.finfo(float).eps # very small number
-        
-        while rmax - rmax_new > rmax_tol:
-            if rmax_new != 0:
-                rmax = rmax_new
 
-            number_of_recurse = 3
+        while True:
             p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
+            # print("R_max before = ", rmax)
+            # print("R max new = ", rmax_new)
+            # print("R_max after = ", rmax)
 
-            #plt.figure()
+            number_of_recurse = 2
             for i in range(number_of_recurse):
-                print('r_max = ', rmax, ', DEPTH: ', i)
-
                 theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
                 p0_step = (p0_max - p0_min) / number_of_steps_p0
                 
-                theta0, p0, theta_last, r_last, max_radius, loss, z, r, theta = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax, velocity, number_of_cores)
-
+                theta0, p0, theta_last, r_last, max_radius, loss, z, r, theta = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity, number_of_cores)
+                
                 theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
                 p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
+            print("theta0: ", theta0, ", p0: ", p0)
 
-                #plt.plot(z, r)
+            rmax_out = max_radius
 
+            while abs(rmax_out - rmax_in) > rmax_tol:
+                rmax_in = rmax_out
+
+                theta, _, z, r = Solve([theta0, p0], rmax_in, velocity)
+                rmax_out = max(r)
+                
+            theta_last = theta[-1]
+            r_last = r[-1]
+
+            if (abs(np.degrees(theta_last) + 90) < 1e-3) and (abs(r_last) < 1e-3):
+                break
             
-            #plt.savefig('velocity_%s_rmax_%s.svg' % (str(round(velocity, 2)), str(round(rmax, 4))))
-
-            rmax_new = max_radius 
-            count_rmax += 1
-
-        #print("Iterations for finding optimal rmax: ", count_rmax)
+            print("last theta: ", np.degrees(theta_last), ", last r: ", r_last)
 
         volume = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0
         for i in range(2, len(r)):
             dV_i = np.pi / 3 * ds * np.cos(theta[i - 1]) * (r[i - 1] ** 2 + r[i - 1] * r[i] + r[i] ** 2)
             volume += dV_i
-            dm_i = (P_atm + buoyancy(height)*(z[i] - a)) * dV_i * mu_gas / (R * T_gas) 
+            ro_gas_prev = p_gas[i-1]
+            ro_gas_curr = p_gas[i] * mu_gas / (R * T_gas) 
+            dm_i = (ro_gas_prev + ro_gas_curr) * dV_i / 2
             m_gas_output += dm_i
             
         
         Fg = (m_payload + m_b + m_gas) * g
         Fa = rho_atm * volume * g
         
-        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax ** 2)))
-        F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_out ** 2)))
+        F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_out ** 2) / 2 
         dF = (Fa - Fg) + F_drag    
 
         delta_mgas =  m_gas - m_gas_output
@@ -115,15 +120,15 @@ def main(number_of_cores, height):
     Fg = (m_payload + m_b + m_gas) * g
     Fa = rho_atm * volume * g
     
-    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax ** 2)))
-    F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax ** 2) / 2 
+    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_out ** 2)))
+    F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_out ** 2) / 2 
     dF = (Fa - Fg) + F_drag
 
     f = open('%s' % output_filename, 'w')
 
     print("_______________________height = ", height, "_______________________", file=f)
     print("theta0: ", theta0, ", p0: ", p0, file=f)
-    print("Maximum radius: ", max_radius, file=f)
+    print("Maximum radius: ", max(r), file=f)
     print("Last theta: ", np.degrees(theta_last), ", Last R: ", r_last, file=f)
     print("Total lost (for theta0 and a): ", loss, file=f)
     print("___________________________________________________________________", file=f)
