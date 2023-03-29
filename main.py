@@ -39,10 +39,10 @@ def main(number_of_cores, height):
     :param: height - current altitude (m)
     :return: results in txt file, data in csv files and plots
     """
-    rho_atm, _, P_atm, T_gas = density(height)
+    rho_atm, _, _, T_gas = density(height)
 
     p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-    rmax_tol = 1e-2
+    rmax_tol = 1e-3
     mgas_tol = 1e-1
     
     velocity = 4  
@@ -68,7 +68,7 @@ def main(number_of_cores, height):
                 theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
                 p0_step = (p0_max - p0_min) / number_of_steps_p0
                 
-                theta0, p0, theta_last, r_last, max_radius, loss, z, r, theta = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity, number_of_cores)
+                theta0, p0, theta_last, r_last, max_radius, loss, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity, number_of_cores)
                 
                 theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
                 p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
@@ -79,7 +79,7 @@ def main(number_of_cores, height):
             while abs(rmax_out - rmax_in) > rmax_tol:
                 rmax_in = rmax_out
 
-                theta, _, z, r = Solve([theta0, p0], rmax_in, velocity)
+                theta, _, z, r, p_gas, _ = Solve([np.radians(theta0), p0], rmax_in, velocity)
                 rmax_out = max(r)
                 
             theta_last = theta[-1]
@@ -95,7 +95,7 @@ def main(number_of_cores, height):
         for i in range(2, len(r)):
             dV_i = np.pi / 3 * ds * np.cos(theta[i - 1]) * (r[i - 1] ** 2 + r[i - 1] * r[i] + r[i] ** 2)
             volume += dV_i
-            ro_gas_prev = p_gas[i-1]
+            ro_gas_prev = p_gas[i - 1]
             ro_gas_curr = p_gas[i] * mu_gas / (R * T_gas) 
             dm_i = (ro_gas_prev + ro_gas_curr) * dV_i / 2
             m_gas_output += dm_i

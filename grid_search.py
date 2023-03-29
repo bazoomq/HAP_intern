@@ -43,8 +43,7 @@ def theta0_p0(grid_params, rmax, velocity, number_of_cores):
 
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
             count += 1
-            theta, _, z, r = f.result()
-            print(i)
+            theta, _, z, r, p_gas, _ = f.result()
             # sgn_arr = []
             # for i in range(2, len(theta)):
             #     count = 0
@@ -62,12 +61,13 @@ def theta0_p0(grid_params, rmax, velocity, number_of_cores):
                 r_last = r[-1]
                 optimal_z = z
                 optimal_r = r
+                optimal_pgas = p_gas
                 optimal_theta = theta
                 if (abs(np.degrees(theta_last) + 90) < 1e-2) and (abs(r_last) < 1e-3):
                     print("break")
                     break
 
-    res = np.array([np.degrees(theta0), p0, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta])
+    res = np.array([np.degrees(theta0), p0, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta, optimal_pgas])
     #print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
     #del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
 
