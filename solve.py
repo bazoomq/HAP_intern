@@ -5,6 +5,7 @@ from density import density
 from calculate_rp import get_sr
 from params import *
 
+height = 15000
 
 def Solve(params, rmax, velocity):
     """
@@ -26,7 +27,7 @@ def Solve(params, rmax, velocity):
     rho_atm = density(height)[0]
     rs, s_half = get_sr(rp_max) # just gets lists of s and r for half of the balloon's core length
     f = interp1d(s_half, rs, kind='cubic') # interpolate r's in all points on that interval [0, l/2]
-    P_atm, T_gas = density(height)[2], density(height)[2]
+    P_atm, T_gas = density(height)[2], density(height)[3]
 
     p_gas = P_atm + p0
     p_air = P_atm
@@ -37,7 +38,7 @@ def Solve(params, rmax, velocity):
             rp = f(t)
         else:
             rp = f(l - t)
-        theta, T, z, r = y
+        theta, T, z, r, p_gas, p_air = y
                 
         k_h = mu_gas * g / (R * T_gas)
         k_h_air = mu_air * g / (R * T_gas)

@@ -15,11 +15,11 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 10
-        theta0_min = 0
-        p0_max = -13
-        p0_min = -15
-        number_of_steps_p0 = 80
+        theta0_max = 2.0
+        theta0_min = 0.5
+        p0_max = -13.5
+        p0_min = -14.5
+        number_of_steps_p0 = 100
         number_of_steps_theta0 = 100
     else:
         theta0_max = 90
@@ -42,10 +42,10 @@ def main(number_of_cores, height):
     rho_atm, _, _, T_gas = density(height)
 
     p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-    rmax_tol = 1e-3
+    rmax_tol = 1e-1
     mgas_tol = 1e-1
     
-    velocity = 4  
+    velocity = 2.9177
     
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)

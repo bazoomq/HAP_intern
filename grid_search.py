@@ -39,19 +39,9 @@ def theta0_p0(grid_params, rmax, velocity, number_of_cores):
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
         results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
         results = np.array(results)    
-        count = 0
 
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
-            count += 1
             theta, _, z, r, p_gas, _ = f.result()
-            # sgn_arr = []
-            # for i in range(2, len(theta)):
-            #     count = 0
-            #     if np.sign(theta[i] - theta[i - 1]) + np.sign(theta[i-1] - theta[i - 2]) == 0:
-            #         count += 1
-
-            # if count > 1:
-            #     continue
      
             loss = np.sqrt(((90 + np.degrees(theta[-1])) / 90) ** 2 + (r[-1] / rp_max) ** 2) # rp_max - maximum possible radius of the balloon
             if loss < loss_min:           
@@ -68,7 +58,5 @@ def theta0_p0(grid_params, rmax, velocity, number_of_cores):
                     break
 
     res = np.array([np.degrees(theta0), p0, theta_last, r_last, max(optimal_r), loss_min, optimal_z, optimal_r, optimal_theta, optimal_pgas])
-    #print("Iterations for finding optimal theta0 and a for this rmax and velocity: ", count)
-    #del theta, z, r, grid, results, theta0, optimal_r, optimal_z, optimal_theta
 
     return res
