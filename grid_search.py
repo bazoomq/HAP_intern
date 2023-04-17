@@ -13,10 +13,7 @@ def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0):
     :return: grid of theta and p0 
     """
     grid = []
-
-    #print("a_max: ", a_max,"a_min: ", a_min,"step_a: ", step_a, "theta_max: ",  
-    #theta_max, "theta_min: ", theta_min, "step_theta: ", step_theta)
-
+    
     for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
         for j in np.arange(p0_max, p0_min, -step_p0):
             grid.append([i, j])
@@ -26,7 +23,7 @@ def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0):
 def theta0_p0(grid_params, rmax, velocity, number_of_cores):
     """
 
-    :param grid_params: list of grid parameters: searching boundaries and grid step (for theta0 and a) 
+    :param grid_params: list of grid parameters: searching boundaries and grid step (for theta0 and p0) 
     :param rmax: current maximum radius of the balloon
     :param velocity: current velocity (input)
     :number_of_cores: the number of cores that are involved in parallel computing

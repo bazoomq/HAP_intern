@@ -15,10 +15,10 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 2.0
-        theta0_min = 0.5
-        p0_max = -13.5
-        p0_min = -14.5
+        theta0_max = 1.2
+        theta0_min = 1.18
+        p0_max = -14
+        p0_min = -14.3
         number_of_steps_p0 = 100
         number_of_steps_theta0 = 100
     else:
@@ -42,8 +42,8 @@ def main(number_of_cores, height):
     rho_atm, _, _, T_gas = density(height)
 
     p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-    rmax_tol = 1e-1
-    mgas_tol = 1e-1
+    rmax_tol = 1e-3
+    mgas_tol = 1e-2
     
     velocity = 2.9177
     
@@ -51,17 +51,13 @@ def main(number_of_cores, height):
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
     delta_mgas = m_gas - m_gas_output
-
-    while abs(delta_mgas) > mgas_tol:
-        rmax_in = rp_max
-        rmax_out = 0
+    rmax_in = rp_max
+    rmax_out = 0
+    while abs(delta_mgas) > mgas_tol:    
         epsilon = np.finfo(float).eps # very small number
 
         while True:
             p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-            # print("R_max before = ", rmax)
-            # print("R max new = ", rmax_new)
-            # print("R_max after = ", rmax)
 
             number_of_recurse = 2
             for i in range(number_of_recurse):
@@ -76,16 +72,21 @@ def main(number_of_cores, height):
 
             rmax_out = max_radius
 
+            count = 0
+            print("rmax_out = ", rmax_out)
             while abs(rmax_out - rmax_in) > rmax_tol:
+                count += 1
                 rmax_in = rmax_out
 
                 theta, _, z, r, p_gas, _ = Solve([np.radians(theta0), p0], rmax_in, velocity)
                 rmax_out = max(r)
-                
+            print("number of iters for rmax sync: ", count)
+            
+            rmax_in = rmax_out
             theta_last = theta[-1]
             r_last = r[-1]
 
-            if (abs(np.degrees(theta_last) + 90) < 1e-3) and (abs(r_last) < 1e-3):
+            if (abs(np.degrees(theta_last) + 90) < 1e-2) and (abs(r_last) < 1e-2):
                 break
             
             print("last theta: ", np.degrees(theta_last), ", last r: ", r_last)
@@ -95,7 +96,7 @@ def main(number_of_cores, height):
         for i in range(2, len(r)):
             dV_i = np.pi / 3 * ds * np.cos(theta[i - 1]) * (r[i - 1] ** 2 + r[i - 1] * r[i] + r[i] ** 2)
             volume += dV_i
-            ro_gas_prev = p_gas[i - 1]
+            ro_gas_prev = p_gas[i - 1] * mu_gas / (R * T_gas)
             ro_gas_curr = p_gas[i] * mu_gas / (R * T_gas) 
             dm_i = (ro_gas_prev + ro_gas_curr) * dV_i / 2
             m_gas_output += dm_i
@@ -111,18 +112,18 @@ def main(number_of_cores, height):
         delta_mgas =  m_gas - m_gas_output
         delta_velocity = velocity - velocity_output
 
-        print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
+        print("output velocity = ", velocity_output, ", input velocity = ", velocity, ", difference = ", abs(delta_velocity))
         print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
 
         velocity = velocity - (delta_velocity / 2 )
         
 
-    Fg = (m_payload + m_b + m_gas) * g
-    Fa = rho_atm * volume * g
+    # Fg = (m_payload + m_b + m_gas) * g
+    # Fa = rho_atm * volume * g
     
-    velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_out ** 2)))
-    F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_out ** 2) / 2 
-    dF = (Fa - Fg) + F_drag
+    # velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_out ** 2)))
+    # F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_out ** 2) / 2 
+    # dF = (Fa - Fg) + F_drag
 
     f = open('%s' % output_filename, 'w')
 
