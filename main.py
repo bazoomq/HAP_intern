@@ -69,22 +69,7 @@ def main(number_of_cores, height):
                 theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
                 p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
             print("theta0: ", theta0, ", p0: ", p0)
-
-            rmax_out = max_radius
-
-            count = 0
-            print("rmax_out = ", rmax_out)
-            while abs(rmax_out - rmax_in) > rmax_tol:
-                count += 1
-                rmax_in = rmax_out
-
-                theta, _, z, r, p_gas, _ = Solve([np.radians(theta0), p0], rmax_in, velocity)
-                rmax_out = max(r)
-            print("number of iters for rmax sync: ", count)
             
-            rmax_in = rmax_out
-            theta_last = theta[-1]
-            r_last = r[-1]
 
             if (abs(np.degrees(theta_last) + 90) < 1e-2) and (abs(r_last) < 1e-2):
                 break

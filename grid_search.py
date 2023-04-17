@@ -30,11 +30,26 @@ def theta0_p0(grid_params, rmax, velocity, number_of_cores):
     :return: result array: theta0, a, theta (theta_last) and radius (r_last) on the top of the balloon, 
     """      
 
+
     theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step = grid_params
     grid = get_grid(theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step)
     optimal_z, optimal_r, loss_min = [], [], 1000
+
+    rmax_in_arr = []
+    for g in grid:
+        rmax_out = 3
+        rmax_in = rmax
+
+        while abs(rmax_out - rmax_in) > rmax_tol:
+            count += 1
+            rmax_in = rmax_out
+
+            theta, _, z, r, p_gas, _ = Solve([np.radians(g[0]), g[1]], rmax_in, velocity)
+            rmax_out = max(r)
+        rmax_in_arr.append(rmax_out)
+
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
-        results = [[executor.submit(Solve, g, rmax, velocity), g] for g in grid]
+        result = [[executor.submit(Solve, g, rmax_in, velocity), g] for g in grid]
         results = np.array(results)    
 
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
