@@ -56,25 +56,19 @@ def main(number_of_cores, height):
     while abs(delta_mgas) > mgas_tol:    
         epsilon = np.finfo(float).eps # very small number
 
-        while True:
-            p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
+        p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
 
-            number_of_recurse = 2
-            for i in range(number_of_recurse):
-                theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
-                p0_step = (p0_max - p0_min) / number_of_steps_p0
-                
-                theta0, p0, theta_last, r_last, max_radius, loss, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity, number_of_cores)
-                
-                theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
-                p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
-            print("theta0: ", theta0, ", p0: ", p0)
+        number_of_recurse = 2
+        for i in range(number_of_recurse):
+            theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
+            p0_step = (p0_max - p0_min) / number_of_steps_p0
             
-
-            if (abs(np.degrees(theta_last) + 90) < 1e-2) and (abs(r_last) < 1e-2):
-                break
-            
-            print("last theta: ", np.degrees(theta_last), ", last r: ", r_last)
+            theta0, p0, theta_last, r_last, rmax_in, loss, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity, number_of_cores)
+            theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
+            p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
+        
+        print("theta0: ", theta0, ", p0: ", p0)       
+        print("last theta: ", np.degrees(theta_last), ", last r: ", r_last)
 
         volume = np.pi / 3 * ds * np.cos(np.radians(theta0)) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0

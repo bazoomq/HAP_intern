@@ -5,7 +5,7 @@ from solve import Solve
 from params import *
 
 
-def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0):
+def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0, rmax_in, velocity):
     """
     getting a grid to search theta0 and p0
     :param theta_max, theta_min, p0_max, p0_min: searching boundaries
@@ -13,14 +13,20 @@ def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0):
     :return: grid of theta and p0 
     """
     grid = []
-    
+    rmax_out = 0
+    rmax_tol = 1e-3
     for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
         for j in np.arange(p0_max, p0_min, -step_p0):
-            grid.append([i, j])
+            while abs(rmax_out - rmax_in) > rmax_tol:
+                rmax_in = rmax_out
+                theta, _, z, r, p_gas, _ = Solve([np.radians(i), j], rmax_in, velocity)
+                rmax_out = max(r)
+            
+            grid.append([[i, j], rmax_out])
     return grid
 
 
-def theta0_p0(grid_params, rmax, velocity, number_of_cores):
+def theta0_p0(grid_params, rmax_in, velocity, number_of_cores):
     """
 
     :param grid_params: list of grid parameters: searching boundaries and grid step (for theta0 and p0) 
@@ -30,26 +36,12 @@ def theta0_p0(grid_params, rmax, velocity, number_of_cores):
     :return: result array: theta0, a, theta (theta_last) and radius (r_last) on the top of the balloon, 
     """      
 
-
     theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step = grid_params
-    grid = get_grid(theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step)
-    optimal_z, optimal_r, loss_min = [], [], 1000
-
-    rmax_in_arr = []
-    for g in grid:
-        rmax_out = 3
-        rmax_in = rmax
-
-        while abs(rmax_out - rmax_in) > rmax_tol:
-            count += 1
-            rmax_in = rmax_out
-
-            theta, _, z, r, p_gas, _ = Solve([np.radians(g[0]), g[1]], rmax_in, velocity)
-            rmax_out = max(r)
-        rmax_in_arr.append(rmax_out)
+    grid = get_grid(theta0_max, theta0_min, p0_max, p0_min, theta_step, p0_step, rmax_in, velocity)
+    optimal_z, optimal_r, loss_min = [], [], 1000 
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
-        result = [[executor.submit(Solve, g, rmax_in, velocity), g] for g in grid]
+        results = [[executor.submit(Solve, g[0], g[1], velocity), g] for g in grid]
         results = np.array(results)    
 
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
