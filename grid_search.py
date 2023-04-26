@@ -17,9 +17,11 @@ def get_grid(theta_max, theta_min, p0_max, p0_min, step_theta, step_p0, rmax_in,
     rmax_tol = 1e-3
     for i in np.arange(np.radians(theta_max), np.radians(theta_min), -np.radians(step_theta)):
         for j in np.arange(p0_max, p0_min, -step_p0):
+            rmax_in = 3
             while abs(rmax_out - rmax_in) > rmax_tol:
-                rmax_in = rmax_out
-                theta, _, z, r, p_gas, _ = Solve([np.radians(i), j], rmax_in, velocity)
+                # if rmax_out != 0:
+                #     rmax_in = rmax_out
+                theta, _, z, r, p_gas, _ = Solve([i, j], rmax_in, velocity)
                 rmax_out = max(r)
             
             grid.append([[i, j], rmax_out])
@@ -41,7 +43,7 @@ def theta0_p0(grid_params, rmax_in, velocity, number_of_cores):
     optimal_z, optimal_r, loss_min = [], [], 1000 
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=number_of_cores) as executor:
-        results = [[executor.submit(Solve, g[0], g[1], velocity), g] for g in grid]
+        results = [[executor.submit(Solve, g[0], g[1], velocity), g[0]] for g in grid]
         results = np.array(results)    
 
         for i, f in enumerate(concurrent.futures.as_completed(results[:, 0])):
