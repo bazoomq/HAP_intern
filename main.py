@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from solve import Solve
 from density import density
 from params import *
-from grid_search import theta0_p0
+from grid_search import theta0_p0, get_grid
 import pandas as pd
 
 
@@ -15,10 +15,10 @@ def initialize(height):
     :return: min and max values and step of grid  
     """
     if height < 21500:
-        theta0_max = 1.2
-        theta0_min = 1.18
+        theta0_max = 1.25
+        theta0_min = 1.15
         p0_max = -14
-        p0_min = -14.3
+        p0_min = -14.5
         number_of_steps_p0 = 100
         number_of_steps_theta0 = 100
     else:
@@ -42,8 +42,7 @@ def main(number_of_cores, height):
     rho_atm, _, _, T_gas = density(height)
 
     p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
-    rmax_tol = 1e-3
-    mgas_tol = 1e-2
+    mgas_tol = 1e-1
     
     velocity = 2.9177
     
@@ -58,12 +57,13 @@ def main(number_of_cores, height):
 
         p0_min, p0_max, number_of_steps_p0, theta0_min, theta0_max, number_of_steps_theta0 = initialize(height)
 
-        number_of_recurse = 2
-        for i in range(number_of_recurse):
+        theta_last = 0 
+        r_last = 1
+        while (abs(np.degrees(theta_last) + 90) > 1e-2) or (abs(r_last) > 1e-2):
             theta0_step = (theta0_max - theta0_min) / number_of_steps_theta0
             p0_step = (p0_max - p0_min) / number_of_steps_p0
             
-            theta0, p0, theta_last, r_last, rmax_out, loss, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity, number_of_cores)
+            theta0, p0, theta_last, r_last, rmax_out, loss, z, r, theta, p_gas = get_grid([theta0_max, theta0_min, p0_max, p0_min, theta0_step, p0_step], rmax_in, velocity)
             theta0_max, theta0_min = theta0 + theta0_step + epsilon, theta0 - theta0_step - epsilon
             p0_max, p0_min = p0 + p0_step + epsilon, p0 - p0_step - epsilon 
         
