@@ -5,7 +5,6 @@ from density import density
 from calculate_rp import get_sr
 from params import *
 
-height = 15000
 
 def Solve(params, rmax, velocity):
     """
@@ -24,10 +23,9 @@ def Solve(params, rmax, velocity):
     :return: solution of a system of the differential equations: lists of theta, T, z, r respectively
     """
     theta0, p0 = params
-    rho_atm = density(height)[0]
+    rho_atm, _, P_atm, T_gas = density(height)
     rs, s_half = get_sr(rp_max) # just gets lists of s and r for half of the balloon's core length
     f = interp1d(s_half, rs, kind='cubic') # interpolate r's in all points on that interval [0, l/2]
-    P_atm, T_gas = density(height)[2], density(height)[3]
 
     p_gas = P_atm + p0
     p_air = P_atm
@@ -56,7 +54,7 @@ def Solve(params, rmax, velocity):
         ]
     
     # boundary conditions (theta0, T0, z0, r0), theta0 is determined by the algorithm
-    T0 = (L0 + Cx * rho_atm * velocity * abs(velocity) * math.pi * rmax**2 / 2) / np.cos(theta0)
+    T0 = (L0 + Cx * rho_atm * velocity * abs(velocity) * math.pi * rmax ** 2 / 2) / np.cos(theta0)
     z0, r0 = 0, 0 
 
     sol = solve_ivp(func, t_span=[0, l], y0=[theta0, T0, z0, r0, p_gas, p_air], t_eval=np.arange(0, l, ds)) 
