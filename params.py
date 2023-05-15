@@ -24,7 +24,7 @@ output_filename = os.path.join('results', 'bisection_result_output_for_altitude_
 z2r_csv_filename = os.path.join('results', 'bisection_z2r_%s.csv' % height)
 plot_filename = os.path.join('plots', 'bisection_height_%s.svg' % height)
 
-ds = 0.002 # system integration step
+ds = 0.001 # system integration step; 0.001
 Cx = 0.47 # balloon drag coefficient (determined by the special algorithm)
 
 wp = 0.229158 # pumpkin shape balloon film weight density 

@@ -14,8 +14,8 @@ def initialize(height):
     :return: min and max values  
     """
     if height < 21500:
-        theta0_max = 1.25
-        theta0_min = 1.15
+        theta0_max = 1.3
+        theta0_min = 1.0
         p0_max = -12
         p0_min = -18
     else:
@@ -36,7 +36,7 @@ def main(height):
 
     p0_min, p0_max, theta0_min, theta0_max = initialize(height)
     
-    mgas_tol = 1e-3
+    mgas_tol = 1e-4
     
     velocity = 2.9177  
     
@@ -71,9 +71,13 @@ def main(height):
 
         print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
         print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
-
-        velocity = velocity - (delta_velocity / 2 )
         
+        #from experience
+        if delta_mgas < 0:
+            velocity -= delta_velocity / 2
+        else:
+            velocity += delta_velocity / 2
+                        
     # rmax = max_radius
 
     # Fg = (m_payload + m_b + m_gas) * g
