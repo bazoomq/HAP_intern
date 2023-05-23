@@ -38,14 +38,19 @@ def main(height):
     
     mgas_tol = 1e-4
     
-    velocity = 2.9177  
-    
+    v_min = 2.999
+    v_max = 3.5
+    velocity = v_min 
+    prev_velocity = velocity 
+    iteration  = 0
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
     delta_mgas = m_gas - m_gas_output
-    rmax_in = 3    
+    rmax_in = 3 
+     
     while abs(delta_mgas) > mgas_tol:
+        
         theta0, p0, theta_last, r_last, rmax_in, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min], rmax_in, velocity)
 
         volume = np.pi / 3 * ds * np.cos(theta0) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
@@ -67,17 +72,24 @@ def main(height):
         dF = (Fa - Fg) + F_drag    
 
         delta_mgas =  m_gas - m_gas_output
-        delta_velocity = velocity - velocity_output
-
-        print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
-        print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
+        #vel_tol = 1e-2
+        #while delta_velocity >= vel_tol:??
+            
+        if iteration == 0:
+            velocity = v_min + (v_max - v_min) / 2
         
-        #from experience
-        if delta_mgas < 0:
-            velocity -= delta_velocity / 2
-        else:
-            velocity += delta_velocity / 2
-                        
+        #TODO implement bisection for velocities 
+        elif iteration >= 1:
+            delta_velocity = velocity - prev_velocity
+            prev_velocity = velocity
+            if delta_mgas < 0:
+                velocity -= delta_velocity / 2
+            else:
+                velocity += delta_velocity / 2
+        
+        iteration += 1     
+        #print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
+        print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
     # rmax = max_radius
 
     # Fg = (m_payload + m_b + m_gas) * g

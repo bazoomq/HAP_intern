@@ -14,15 +14,14 @@ def theta0_p0(params, rmax_in, velocity):
     :return: result array: theta0, a, theta (theta_last) and radius (r_last) on the top of the balloon,
     """      
     rmax_out = 0
-    rmax_tol = 1e-9
+    rmax_tol = 1e-6
 
     r_last = 0.1
     theta_last = 0
     p0 = -14.16 #random.uniform(params[3], params[2])
-    
     while (abs(theta_last + 90) > 1e-3) or (abs(r_last) > 1e-3):
         theta0_max, theta0_min, p0_max, p0_min = params
-        
+
         while (abs(theta_last + 90) > 1e-4):
             theta0 = (theta0_min + theta0_max) / 2
 
@@ -35,11 +34,14 @@ def theta0_p0(params, rmax_in, velocity):
             #print(np.degrees(theta_last))
             
             if theta_last < -90:
-                theta0_max = theta0
+                theta0_max = theta0 + 1e-6
             else: 
-                theta0_min = theta0
+                theta0_min = theta0 - 1e-6
                 
-                
+            plt.plot(z, r)
+            plt.savefig("5.png")   
+            plt.clf()
+            
         while (abs(r_last) > 1e-3):
             p0 = (p0_min + p0_max) / 2
             result = Solve([theta0, p0], rmax_in, velocity)
@@ -50,11 +52,11 @@ def theta0_p0(params, rmax_in, velocity):
             r_last = r[-1] 
             
             if r_last < 0:
-                p0_max = p0
+                p0_max = p0 
             else:
                 p0_min = p0
                 
-
+        rmax_out = max(r)
         while abs(rmax_out - rmax_in) > rmax_tol:  
             if rmax_out != 0:
                 rmax_in = rmax_out
