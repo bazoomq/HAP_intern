@@ -14,10 +14,10 @@ def initialize(height):
     :return: min and max values  
     """
     if height < 21500:
-        theta0_max = 1.3
-        theta0_min = 1.0
-        p0_max = -12
-        p0_min = -18
+        theta0_max = 1.25
+        theta0_min = 1.1
+        p0_max = -13.5
+        p0_min = -14.5
     else:
         theta0_max = 90
         theta0_min = 20
@@ -38,11 +38,9 @@ def main(height):
     
     mgas_tol = 1e-4
     
-    v_min = 2.999
-    v_max = 3.5
-    velocity = v_min 
-    prev_velocity = velocity 
-    iteration  = 0
+    v_min = 3
+    v_max = 3
+    velocity = v_min + (v_max - v_min) / 2 
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
@@ -75,19 +73,14 @@ def main(height):
         #vel_tol = 1e-2
         #while delta_velocity >= vel_tol:??
             
-        if iteration == 0:
-            velocity = v_min + (v_max - v_min) / 2
+        if delta_mgas < 0:
+            v_max = velocity
+        else:
+            v_min = velocity
         
-        #TODO implement bisection for velocities 
-        elif iteration >= 1:
-            delta_velocity = velocity - prev_velocity
-            prev_velocity = velocity
-            if delta_mgas < 0:
-                velocity -= delta_velocity / 2
-            else:
-                velocity += delta_velocity / 2
-        
-        iteration += 1     
+        velocity = v_min + (v_max - v_min) / 2
+
+            
         #print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
         print("m gas output = ", m_gas_output, ", m gas = ", m_gas, ", difference = ", abs(delta_mgas))
     # rmax = max_radius
