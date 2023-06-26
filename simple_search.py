@@ -35,7 +35,7 @@ def theta0_p0(params, rmax_in, velocity):
             theta0 = theta0_prev + theta0_step
             result = Solve([theta0, p0], rmax_in, velocity)
             result = np.array(result)    
-            theta, _, z, r, p_gas, _ = result 
+            theta, _, z, r, p_gas, p_air = result 
             
             theta_last = np.degrees(theta[-1])
             
@@ -51,7 +51,7 @@ def theta0_p0(params, rmax_in, velocity):
             p0 = p0_prev + p0_step
             result = Solve([theta0, p0], rmax_in, velocity)
             result = np.array(result)    
-            theta, _, z, r, p_gas, _ = result 
+            theta, _, z, r, p_gas, p_air = result 
             
             r_last = r[-1]
             
@@ -67,7 +67,7 @@ def theta0_p0(params, rmax_in, velocity):
         while abs(rmax_out - rmax_in) > rmax_tol: 
             if rmax_out != 0:
                 rmax_in = rmax_out
-            theta, _, z, r, p_gas, _ = Solve([theta0, p0], rmax_out, velocity)
+            theta, _, z, r, p_gas, p_air = Solve([theta0, p0], rmax_out, velocity)
             rmax_out = max(r)
             
             
@@ -79,5 +79,5 @@ def theta0_p0(params, rmax_in, velocity):
         # param_logger.warning(theta_last, np.degrees(theta0), r_last, p0, rmax_out, np.degrees(theta0_min), np.degrees(theta0_max), p0_min, p0_max)
 
     print(count)
-    res = np.array([theta0, p0, theta_last, r_last, rmax_out, z, r, theta, p_gas])
+    res = np.array([theta0, p0, theta_last, r_last, rmax_out, z, r, theta, p_gas, p_air])
     return res

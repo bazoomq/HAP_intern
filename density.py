@@ -20,4 +20,4 @@ def density(height):
     T_gas = T_atm + dT_gas # temperature of the LTA gas (K)
     rho_gas = P_atm / xmu_gas / T_gas # gas density at the current altitude (kh/m^3)
 
-  return rho_atm, rho_gas, P_atm, T_gas
+  return rho_atm, rho_gas, P_atm, T_gas, T_atm

@@ -32,11 +32,11 @@ def main(height):
     :param: height - current altitude (m)
     :return: results in txt file, data in csv files and plots
     """
-    rho_atm, _, P_atm, T_gas = density(height)
+    rho_atm, _, P_atm, T_gas, T_atm = density(height)
 
     p0_min, p0_max, theta0_min, theta0_max = initialize(height)
     
-    mgas_tol = 1e-5
+    mgas_tol = 1e-7
     
     v_min = 2.8
     v_max = 3.2
@@ -50,22 +50,27 @@ def main(height):
     while abs(delta_mgas) > mgas_tol:
         velocity = v_min + (v_max - v_min) / 2
 
-        theta0, p0, theta_last, r_last, rmax_out, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min], rmax_in, velocity)
+        theta0, p0, theta_last, r_last, rmax_out, z, r, theta, p_gas, p_air = theta0_p0([theta0_max, theta0_min, p0_max, p0_min], rmax_in, velocity)
 
         volume = np.pi / 3 * ds * np.cos(theta0) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0
+        Fa = 0
         for i in range(2, len(r)):
             dV_i = np.pi / 3 * ds * np.cos(theta[i - 1]) * (r[i - 1] ** 2 + r[i - 1] * r[i] + r[i] ** 2)
             volume += dV_i
             ro_gas_prev = p_gas[i - 1] * mu_gas / (R * T_gas)
             ro_gas_curr = p_gas[i] * mu_gas / (R * T_gas) 
+            ro_air_prev = p_air[i - 1] * mu_air / (R * T_atm) 
+            ro_air_curr = p_air[i] * mu_air / (R * T_atm) 
+
+            Fa += (ro_air_curr + ro_air_prev) * dV_i / 2 * g
             dm_i = (ro_gas_prev + ro_gas_curr) * dV_i / 2
             m_gas_output += dm_i
             
         
         Fg = (m_payload + m_b + m_gas) * g
-        Fa = rho_atm * volume * g
-        
+        Fa_integral = rho_atm * volume * g
+        print("cycle: ", Fa, "integral: ", Fa_integral)
         velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_out ** 2)))
         F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_out ** 2) / 2 
         dF = (Fa - Fg) + F_drag    
@@ -96,7 +101,7 @@ def main(height):
 
     print("_______________________height = ", height, "_______________________", file=f)
     print("theta0: ", np.degrees(theta0), ", p0: ", p0, file=f)
-    print("Maximum radius: ", rmax_in, file=f)
+    print("Maximum radius: ", rmax_out, file=f)
     print("Last theta: ", theta_last, ", Last R: ", r_last, file=f)
     print("___________________________________________________________________", file=f)
     print("Volume of the balloon: ", volume, file=f)

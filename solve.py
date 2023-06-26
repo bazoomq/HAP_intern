@@ -23,7 +23,7 @@ def Solve(params, rmax, velocity):
     :return: solution of a system of the differential equations: lists of theta, T, z, r respectively
     """
     theta0, p0 = params
-    rho_atm, _, P_atm, T_gas = density(height)
+    rho_atm, _, P_atm, T_gas, T_atm = density(height)
     rs, s_half = get_sr(rp_max) # just gets lists of s and r for half of the balloon's core length
     f = interp1d(s_half, rs, kind='cubic') # interpolate r's in all points on that interval [0, l/2]
 
