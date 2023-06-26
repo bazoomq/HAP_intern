@@ -57,6 +57,6 @@ def Solve(params, rmax, velocity):
     T0 = (L0 + Cx * rho_atm * velocity * abs(velocity) * math.pi * rmax ** 2 / 2) / np.cos(theta0)
     z0, r0 = 0, 0 
 
-    sol = solve_ivp(func, t_span=[0, l], y0=[theta0, T0, z0, r0, p_gas, p_air], t_eval=np.arange(0, l, ds)) 
+    sol = solve_ivp(func, method='DOP853', t_span=[0, l], y0=[theta0, T0, z0, r0, p_gas, p_air], t_eval=np.arange(0, l, ds)) 
 
     return sol.y

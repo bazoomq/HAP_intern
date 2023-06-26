@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from density import density
 from params import *
-from bisection_search import theta0_p0
+from simple_search import theta0_p0
 import pandas as pd
 
 
@@ -36,11 +36,11 @@ def main(height):
 
     p0_min, p0_max, theta0_min, theta0_max = initialize(height)
     
-    mgas_tol = 1e-3
+    mgas_tol = 1e-5
     
     v_min = 2.8
     v_max = 3.2
-    velocity = v_min + (v_max - v_min) / 2 
+    #velocity = v_min + (v_max - v_min) / 2 
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
 
@@ -48,8 +48,9 @@ def main(height):
     rmax_in = 3 
      
     while abs(delta_mgas) > mgas_tol:
-        
-        theta0, p0, theta_last, r_last, rmax_in, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min], rmax_in, velocity)
+        velocity = v_min + (v_max - v_min) / 2
+
+        theta0, p0, theta_last, r_last, rmax_out, z, r, theta, p_gas = theta0_p0([theta0_max, theta0_min, p0_max, p0_min], rmax_in, velocity)
 
         volume = np.pi / 3 * ds * np.cos(theta0) * (r[0] ** 2 + r[0] * r[1] + r[1] ** 2)
         m_gas_output = 0
@@ -65,20 +66,19 @@ def main(height):
         Fg = (m_payload + m_b + m_gas) * g
         Fa = rho_atm * volume * g
         
-        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_in ** 2)))
-        F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_in ** 2) / 2 
+        velocity_output = np.sign(Fa - Fg) * math.sqrt((2 * abs(Fa - Fg) / (Cx * rho_atm * math.pi * rmax_out ** 2)))
+        F_drag = -Cx * (rho_atm * velocity_output * abs(velocity_output) * math.pi * rmax_out ** 2) / 2 
         dF = (Fa - Fg) + F_drag    
 
         delta_mgas =  m_gas - m_gas_output
-        #vel_tol = 1e-2
-        #while delta_velocity >= vel_tol:??
+
             
         if delta_mgas < 0:
             v_max = velocity
         else:
             v_min = velocity
         
-        velocity = v_min + (v_max - v_min) / 2
+        #velocity = v_min + (v_max - v_min) / 2
 
             
         #print("velocity_output = ", velocity_output, ", velocity = ", velocity, ", difference = ", abs(delta_velocity))
