@@ -14,8 +14,8 @@ def initialize(height):
     :return: min and max values  
     """
     if height < 21500:
-        theta0_max = 1.25
-        theta0_min = 1.1
+        theta0_max = 1.4
+        theta0_min = 1.0
         p0_max = -13.5
         p0_min = -14.5
     else:
@@ -36,10 +36,10 @@ def main(height):
 
     p0_min, p0_max, theta0_min, theta0_max = initialize(height)
     
-    mgas_tol = 1e-4
+    mgas_tol = 1e-3
     
-    v_min = 3
-    v_max = 3
+    v_min = 2.8
+    v_max = 3.2
     velocity = v_min + (v_max - v_min) / 2 
     m_gas_output = 0
     m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
