@@ -14,7 +14,7 @@ def volume_cone_pumpkin(eps):
     :param eps: epsilon = x / Rx, where Rx is radius of balloon 
     :return: volume and radius of the cone-pumpkin shape balloon
     """
-    f_V = pi / 3 * (eps / sqrt(1 - eps ** 4) - ellipkinc(asin(eps), -1)) + k_V
+    f_V = pi / 3 * (eps / sqrt(1 - eps ** 4) - hyp2f1(1/2, 1/4, 5/4, eps ** 4) * eps) + k_V
     f_S = eps / sqrt(1 - eps ** 4) + 2 * k_S - hyp2f1(1/2, 1/4, 5/4, eps ** 4) * eps
     Rx = 2 * s0_b / f_S
     V = f_V * Rx ** 3
@@ -31,7 +31,7 @@ def radius_cone_pumpkin(V_b):
     :param V_b: balloon volume
     :return: epsilon, radius of the pumpkin part, radius (on the top) and height of the cone part
     """
-    eps_error = 1e-6
+    eps_error = 1e-9
     eps0 = 0
     eps1 = 1
  
@@ -77,4 +77,3 @@ if __name__=="__main__":
     python cone_pumpkin_conjugation.py --input_cone_pumpkin INPUT_FILE_PATH --output_cone_punpkin OUTPUT_FILE_PATH
     """
     calculation_from_file(input_cone_pumpkin, output_cone_pumpkin)
-    
