@@ -14,15 +14,15 @@ def initialize(height):
     :return: min and max values  
     """
     if height < 21500:
-        theta0_max = 1.4
-        theta0_min = 1.0
-        p0_max = -13.5
-        p0_min = -14.5
+        theta0_max = 22.0
+        theta0_min = 0.0
+        p0_max = 2.0
+        p0_min = -20.0
     else:
         theta0_max = 90
         theta0_min = 20
-        p0_max = 200
-        p0_min = 0
+        p0_max = 26
+        p0_min = 20
     return p0_min, p0_max, np.radians(theta0_min), np.radians(theta0_max)
 
 
@@ -36,16 +36,16 @@ def main(height):
 
     p0_min, p0_max, theta0_min, theta0_max = initialize(height)
     
-    mgas_tol = 1e-7
+    mgas_tol = 1e-6
     
     v_min = 2.8
-    v_max = 3.2
+    v_max = 3.4
     #velocity = v_min + (v_max - v_min) / 2 
     m_gas_output = 0
-    m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
+    m_gas = 3.49156577061832 # mass of the lighter-than-air (LTA) gas (kg)
 
     delta_mgas = m_gas - m_gas_output
-    rmax_in = 3 
+    rmax_in = 6.1
      
     while abs(delta_mgas) > mgas_tol:
         velocity = v_min + (v_max - v_min) / 2

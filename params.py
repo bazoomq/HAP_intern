@@ -19,7 +19,7 @@ import os
 # output_cone_pumpkin = args.output_cone_pumpkin
 # input = args.input
 # output = args.output
-height = 15000
+height = 25050
 output_filename = os.path.join('results', 'bisection_result_output_for_altitude_%s.txt' % height)
 z2r_csv_filename = os.path.join('results', 'bisection_z2r_%s.csv' % height)
 plot_filename = os.path.join('plots', 'bisection_height_%s.svg' % height)
@@ -27,15 +27,15 @@ plot_filename = os.path.join('plots', 'bisection_height_%s.svg' % height)
 ds = 0.001 # system integration step; 0.001
 Cx = 0.47 # balloon drag coefficient (determined by the special algorithm)
 
-wp = 0.229158 # pumpkin shape balloon film weight density 
+wp = 0.229158292 # pumpkin shape balloon film weight density 
 rp_max = 6.122831782671 # radius of fully the inflated balloon pumpkin (m)
 l = 2 * hyp2f1(1/4, 1/2, 5/4, 1) * rp_max # maximum core length (m)
 
 g = 9.8065 # free fall acceleration at release location (m/s^2)
-m_payload = 11.922531663 # payload mass (kg)
+m_payload = 11.9225316625786 # payload mass (kg)
 L0 = m_payload * g # payload weight (N)
-m_b = 8.646213297 # balloon mass (kg)
-m_gas = 3.491565771 # mass of the lighter-than-air (LTA) gas (kg)
+m_b = 8.64621329724211 # balloon mass (kg)
+m_gas = 3.49156577061832 # mass of the lighter-than-air (LTA) gas (kg)
 
 R = 8314.462 # gas constant (J/K/mol*1000)
 mu_air = 28.966 # air molar mass (g)
@@ -45,7 +45,7 @@ dT_gas = 0 # additional temperature of the LTA gas due to greenhouse effect (K)
 
 k_Sp = 0.739668778 # coefficient for meridian length calculation
 k_S = k_Sp * math.sqrt(math.pi) 
-k_Vp = 1.21852421611857 # coefficient for design pumpkin shape volume calculation
+k_Vp = 1.21852421611856 # coefficient for design pumpkin shape volume calculation
 k_V = 2.74581225 
 s0_b = k_S * rp_max # meridian length of the balloon from pole to equator (m)
 V_max = k_Vp * s0_b ** 3 # design volume of the balloon fully inflated to its pumpkin shape (m^3)

@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--height", "15000"],
+            "args": ["--height", "17500"],
             "justMyCode": false
         }
     ]

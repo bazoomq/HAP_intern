@@ -23,15 +23,15 @@ def theta0_p0(params, rmax_in, velocity):
 
     r_last = 0.1
     theta_last = 0
-    p0 = -14.16 #random.uniform(params[3], params[2])
+    p0 = 22.7 #random.uniform(params[3], params[2])
     theta0_max, theta0_min, p0_max, p0_min = params
     count = 0
-    while (abs(theta_last + 90) > 1e-3) or (abs(r[-1]) > 1e-3):
+    while (abs(theta_last + 90) > 1e-5) or (abs(r[-1]) > 1e-4):
         # param_logger.warning("Big cycle")
         count += 1
         theta0_prev = theta0_min
         theta0_step = (theta0_max - theta0_min) / 10
-        while (abs(theta_last + 90) > 1e-3):
+        while (abs(theta_last + 90) > 1e-5):
             theta0 = theta0_prev + theta0_step
             result = Solve([theta0, p0], rmax_in, velocity)
             result = np.array(result)    
@@ -47,7 +47,7 @@ def theta0_p0(params, rmax_in, velocity):
             
         p0_prev = p0_min
         p0_step = (p0_max - p0_min) / 10
-        while (abs(r_last) > 1e-3):
+        while (abs(r_last) > 1e-4):
             p0 = p0_prev + p0_step
             result = Solve([theta0, p0], rmax_in, velocity)
             result = np.array(result)    
