@@ -12,7 +12,7 @@ $r'(s) = \sin\theta$ \
 $p_{gas}'(s) = - p_{gas} k_h \cos\theta$ \
 $p_{air}'(s) = - p_{air} k_{h_{air}} \cos\theta$
 
-where $k_h = {\mu_{gas} g \over (R T_{gas})}$ and $k_{h_{air}} = {\mu_{air} g \over (R T_{gas})}$
+where $k_h = {\mu_{gas} g \over R T_{gas}}$ and $k_{h_{air}} = {\mu_{air} g \over R T_{atm}}$
 
 The initial conditions are following:
 
@@ -71,7 +71,7 @@ The following information is written to the text file:
 
 `python main.py --height 15000`
 
-* Output result with following tolerances: for $m_{gas}$ - 0.000001, for $\theta_{last}$ - 0.00001, for $r_{last}$ - 0.0001:
+* Output result with following tolerances: for $m_{gas}$ - 0.00001, for $\theta_{last}$ - 0.001, for $r_{last}$ - 0.001:
 
   _______________________height =  15000 _______________________ \
   theta0:  1.2193599999999996 , p0:  -14.070000000000002 \
