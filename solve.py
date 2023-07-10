@@ -17,16 +17,17 @@ def Solve(params, rmax, velocity):
     - solve_ivp: this function numerically integrates a system of ordinary differential equations given an initial value, use 4th order Runge-Kutta method
     and get_sr(rp_max) function
 
-    :param params: [theta0, a] - current theta0 and a values - params of a system 
+    :param params: [theta0, p0] - current theta0 and p0 values - params of the system 
     :param rmax: maximal radius of the natural shape balloon
     :param velocity: velocity of the natural shape balloon
-    :return: solution of a system of the differential equations: lists of theta, T, z, r respectively
+    :return: solution of a system of the differential equations: lists of theta, T, z, r, p_gas, p_air respectively
     """
     theta0, p0 = params
     rho_atm, _, P_atm, T_gas, T_atm = density(height)
     rs, s_half = get_sr(rp_max) # just gets lists of s and r for half of the balloon's core length
     f = interp1d(s_half, rs, kind='cubic') # interpolate r's in all points on that interval [0, l/2]
 
+    # boundary conditions (p_gas, p_atm), p0 is determined by the algorithm
     p_gas = P_atm + p0
     p_air = P_atm
     

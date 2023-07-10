@@ -4,22 +4,12 @@ import argparse
 import os 
 
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument("--number_of_cores", help="how many cores to use for multiproccessing", type=int)
-# parser.add_argument("--height", help="height of the balloon", type=int)
-# parser.add_argument('--input_cone_pumpkin', type=argparse.FileType('r'), help='input file path for cone-pumpkin conjugation algorithm')
-# parser.add_argument('--output_cone_pumpkin', type=argparse.FileType('w'), help='output file path for cone-pumpkin conjugation algorithm')
-# parser.add_argument('--input', type=argparse.FileType('r'), help='input file path for main algorithm')
-# parser.add_argument('--output', type=argparse.FileType('w'), help='output file path for main algorithm')
-# args = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument("--height", help="height of the balloon", type=int)
+args = parser.parse_args()
+height = args.height
+# height = 25100
 
-# number_of_cores = args.number_of_cores
-# height = args.height
-# input_cone_pumpkin = args.input_cone_pumpkin
-# output_cone_pumpkin = args.output_cone_pumpkin
-# input = args.input
-# output = args.output
-height = 25050
 output_filename = os.path.join('results', 'bisection_result_output_for_altitude_%s.txt' % height)
 z2r_csv_filename = os.path.join('results', 'bisection_z2r_%s.csv' % height)
 plot_filename = os.path.join('plots', 'bisection_height_%s.svg' % height)
