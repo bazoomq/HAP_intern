@@ -5,22 +5,22 @@ This code implements the change of shape of a balloon depending on the altitude 
 ### Overview
 The basis of this method is the numerical solution of a system of differential equations. The Solve(params) function from `solve.py` solves a system of 6 differential equations describing the shape of a balloon depending on the height and parameters $\theta_0$ and $p_0$.
 
-$\theta'(s) = {-2 \pi(r_p w_p \sin\theta + (p_gas - p_air) r) \over T}$ \
+$\theta'(s) = {-2 \pi(r_p w_p \sin\theta + (p_{gas} - p_{air}) r) \over T}$ \
 $T'(s) = 2 \pi r_p w_p \cos\theta$ \
 $z'(s) = \cos\theta$ \
 $r'(s) = \sin\theta$ \
 $p_{gas}'(s) = - p_{gas} k_h \cos\theta$ \
-$p_{air}'(s) = - p_{air} k_{h_{air}} \cos\theta$ \
+$p_{air}'(s) = - p_{air} k_{h_{air}} \cos\theta$
 
-where $k_h = \mu_{gas} * g / (R * T_{gas})$ and $k_{h_{air}} = \mu_{air} * g / (R * T_{gas})$
+where $k_h = {\mu_{gas} g \over (R T_{gas})}$ and $k_{h_{air}} = {\mu_{air} g \over (R T_{gas})}$
 
 The initial conditions are following:
 
 $\theta_0$ \
-$T_0 = (L_0 + C_x * \rho_{atm} * velocity * abs(velocity) * \pi * r_{max} ** 2 / 2) / \cos\theta_0$ \
+$T_0 = {(L_0 + C_x \rho_{atm} v |v| \pi {r_{max} ^ 2 \over 2}) \over \cos\theta_0}$ \
 $z_0 = 0$ \
 $r_0 = 0$ \
-$p_{gas} = P_{atm} + p_0$ \ 
+$p_{gas} = P_{atm} + p_0$ \
 $p_{air} = P_{atm}$ 
 
 where $\theta_0$ and $p_0$ should be computed by current algorithm; $L_0$ is the payload weight (N), velocity and $r_{max}$ are fixed params, $P_{atm}$ is air pressure and $\rho_{atm}$ is air density.
@@ -72,35 +72,36 @@ The following information is written to the text file:
 `python main.py --height 15000`
 
 * Output result with following tolerances: for $m_{gas}$ - 0.000001, for $\theta_{last}$ - 0.00001, for $r_{last}$ - 0.0001:
-_______________________height =  15000 _______________________ \
-theta0:  1.2193599999999996 , p0:  -14.070000000000002 \
-Maximum radius:  3.141763547349405 \
-Last theta:  -89.99932706371716 , Last R:  0.0009499022133381274 \
-___________________________________________________________________ \
-Volume of the balloon:  130.02809101854612 \
-Difference between m_gas and calculated m_gas:  -4.6893540042169946e-06 \
-Difference betweend Fa and Fg:  11.941509621322496 \
-Difference between all forces {(Fa - Fg) + F_drag}:  -1.7763568394002505e-15 \
-Input velocity of the balloon:  2.902734375 \
-Output velocity of the balloon:  2.90095174903956 \
-Difference between input and output velocities:  0.0017826259604398764 \ 
-Running time:  367.29792070388794 s 
+
+  _______________________height =  15000 _______________________ \
+  theta0:  1.2193599999999996 , p0:  -14.070000000000002 \
+  Maximum radius:  3.141763547349405 \
+  Last theta:  -89.99932706371716 , Last R:  0.0009499022133381274 \
+  ___________________________________________________________________ \
+  Volume of the balloon:  130.02809101854612 \
+  Difference between m_gas and calculated m_gas:  -4.6893540042169946e-06 \
+  Difference betweend Fa and Fg:  11.941509621322496 \
+  Difference between all forces {(Fa - Fg) + F_drag}:  -1.7763568394002505e-15 \
+  Input velocity of the balloon:  2.902734375 \
+  Output velocity of the balloon:  2.90095174903956 \
+  Difference between input and output velocities:  0.0017826259604398764 \
+  Running time:  367.29792070388794 s 
 
 
 * Data of zs and rs for future calculations: 
 (the top part of table)
 
-z, r \
-0.0, 0.0 \
-0.0009997735499952865, 2.1280242710555148e-05 \
-0.0019995470996851034, 4.25604997725486e-05 \
-0.002999320648764043, 6.38407855342987e-05 \
-0.00399909419692677, 8.512111434072787e-05 \
-0.004998867743868021, 0.00010640150053337178 \
-0.0059986412892825995, 0.00012768195845038794 \
-0.006998414832865382, 0.0001489625024265649 \
-0.007998188374311307, 0.00017024314679333057 \
-0.008997961913315387, 0.00019152390587876152
+  z, r \
+  0.0, 0.0 \
+  0.0009997735499952865, 2.1280242710555148e-05 \
+  0.0019995470996851034, 4.25604997725486e-05 \
+  0.002999320648764043, 6.38407855342987e-05 \
+  0.00399909419692677, 8.512111434072787e-05 \
+  0.004998867743868021, 0.00010640150053337178 \
+  0.0059986412892825995, 0.00012768195845038794 \
+  0.006998414832865382, 0.0001489625024265649 \
+  0.007998188374311307, 0.00017024314679333057 \
+  0.008997961913315387, 0.00019152390587876152
 
 * Plot of z vs r:
 
