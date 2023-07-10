@@ -10,9 +10,9 @@ $T'(s) = 2 \pi r_p w_p \cos\theta$ \
 $z'(s) = \cos\theta$ \
 $r'(s) = \sin\theta$ \
 $p_{gas}'(s) = - p_{gas} k_h \cos\theta$ \
-$p_{air}'(s) = - p_{air} k_h_{air} \cos\theta$ \
+$p_{air}'(s) = - p_{air} k_{h_{air}} \cos\theta$ \
 
-where $k_h = \mu_{gas} * g / (R * T_{gas})$ and $k_h_{air} = \mu_{air} * g / (R * T_{gas})$
+where $k_h = \mu_{gas} * g / (R * T_{gas})$ and $k_{h_{air}} = \mu_{air} * g / (R * T_{gas})$
 
 The initial conditions are following:
 
@@ -71,8 +71,7 @@ The following information is written to the text file:
 
 `python main.py --height 15000`
 
-* Output result with following tolerances: for $m_{gas}$ = 0.000001, for $\theta_{last}$ = 0.00001, for r_{last} - 0.0001.
-
+* Output result with following tolerances: for $m_{gas}$ - 0.000001, for $\theta_{last}$ - 0.00001, for $r_{last}$ - 0.0001:
 _______________________height =  15000 _______________________ \
 theta0:  1.2193599999999996 , p0:  -14.070000000000002 \
 Maximum radius:  3.141763547349405 \
@@ -103,6 +102,6 @@ z, r \
 0.007998188374311307, 0.00017024314679333057 \
 0.008997961913315387, 0.00019152390587876152
 
-* Plot of z vs r
+* Plot of z vs r:
 
 ![plot](./plots/bisection_height_15000.svg)
