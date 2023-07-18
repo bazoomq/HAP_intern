@@ -6,7 +6,7 @@ from calculate_rp import get_sr
 from params import *
 
 
-def Solve(params, rmax, velocity):
+def Solve(params, rmax, velocity, height):
     """
     integration of a system of the differential equations that determine the shape of the balloon 
     at the current altitude with current velocity and maximum radius

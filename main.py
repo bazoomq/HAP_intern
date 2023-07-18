@@ -21,8 +21,8 @@ def initialize(height):
     else:
         theta0_max = 90.0
         theta0_min = 80.0
-        p0_max = 50.0
-        p0_min = 40.0
+        p0_max = 150.0
+        p0_min = 2.0
     return p0_min, p0_max, np.radians(theta0_min), np.radians(theta0_max)
 
 
@@ -43,7 +43,8 @@ def main(height):
     v_max = 3.4
     
     m_gas = 3.49156577061832 # mass of the lighter-than-air (LTA) gas (kg)
-
+    m_gas_output = 0
+    
     delta_mgas = m_gas - m_gas_output
     rmax_in = 6.1 # input maximal radius of the balloon (for sync)
      
