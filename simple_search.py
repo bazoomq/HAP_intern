@@ -17,28 +17,10 @@ def theta0_p0(params, rmax_in, velocity):
 
     r_last = 0.1
     theta_last = 0
-    p0 = 45 # start p0
+    theta0 = 87.0 # start p0
     theta0_max, theta0_min, p0_max, p0_min = params
     
-    while (abs(theta_last + 90) > 1e-3) or (abs(r[-1]) > 1e-3):
-        theta0_prev = theta0_min
-        theta0_step = (theta0_max - theta0_min) / 10
-        
-        # theta0 computing loop
-        while (abs(theta_last + 90) > 1e-3):
-            theta0 = theta0_prev + theta0_step
-            result = Solve([theta0, p0], rmax_in, velocity)
-            result = np.array(result)    
-            theta, _, z, r, p_gas, p_air = result 
-            
-            theta_last = np.degrees(theta[-1])
-            
-            if theta_last > -90:
-                theta0_prev = theta0
-            
-            elif theta_last < -90:
-                theta0_step /= 10
-            
+    while (abs(theta_last + 90) > 1e-3) or (abs(r[-1]) > 1e-3):            
         p0_prev = p0_min
         p0_step = (p0_max - p0_min) / 10
         # p0 computing loop
@@ -56,7 +38,32 @@ def theta0_p0(params, rmax_in, velocity):
             elif r_last < 0:
                 p0_step /= 10
         
+        theta0_prev = theta0_min
+        theta0_step = (theta0_max - theta0_min) / 10
         
+        # theta0 computing loop
+        while (abs(theta_last + 90) > 1e-3):
+            
+            result = Solve([theta0, p0], rmax_in, velocity)
+            result = np.array(result)    
+            theta, _, z, r, p_gas, p_air = result 
+            
+            theta_last = np.degrees(theta[-1])
+            plt.clf()
+            plt.plot(z, r)
+            plt.savefig("plot.png")
+            if theta_last > 90:
+                theta0_prev = theta0
+                theta0 = theta0_prev - theta0_step
+
+            
+            if theta_last > -90:
+                theta0_prev = theta0
+                theta0 = theta0_prev + theta0_step
+                
+            elif theta_last < -90:
+                theta0_step /= 10
+
         # rmax synchronization
         rmax_out = max(r)
         while abs(rmax_out - rmax_in) > rmax_tol: 
