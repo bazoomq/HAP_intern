@@ -2,6 +2,8 @@ from math import sqrt, pi, asin
 from scipy.special import hyp2f1, ellipkinc
 import pandas as pd
 from params import *
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def volume_cone_pumpkin(eps):
@@ -71,9 +73,45 @@ def calculation_from_file(input, output):
     return
 
 
+def make_plot(pumpkin_radius, cone_radius, cone_height, name):
+    z_arr, r_arr = [], []
+    z_lag = hyp2f1(1/2, 3/4, 7/4, cone_radius ** 4 / pumpkin_radius ** 4) * (cone_radius ** 3) / (3 * pumpkin_radius ** 2)
+    
+    A = [0, 0]
+    B = [cone_radius, cone_height]
+    C = [0, cone_height]
+    
+    for r in np.arange(cone_radius, pumpkin_radius, (pumpkin_radius - cone_radius) / 100):
+        z = hyp2f1(1/2, 3/4, 7/4, r ** 4 / pumpkin_radius ** 4) * (r ** 3) / (3 * pumpkin_radius ** 2)   
+        z_arr.append(z + cone_height - z_lag)
+        r_arr.append(r)
+        
+    for r in np.arange(pumpkin_radius, 0, -pumpkin_radius / 100):
+        z = hyp2f1(1/2, 3/4, 7/4, r ** 4 / pumpkin_radius ** 4) * (r ** 3) / (3 * pumpkin_radius ** 2)
+        z_arr.append(-z + cone_height - z_lag + pumpkin_radius * k_Vp)
+        r_arr.append(r)
+
+    plt.clf()
+    plt.gca().set_aspect('equal')
+    plt.plot(z_arr, r_arr)
+    
+    plt.plot([A[1], B[1]], [A[0], B[0]], 'b-')  
+    plt.plot([A[1], C[1]], [A[0], C[0]], 'b-')  
+    plt.plot([B[1], C[1]], [B[0], C[0]], 'b-')  
+    plt.savefig(name)
+    
+    return
+    
+    
 if __name__=="__main__":
     """
     how to use: 
     python cone_pumpkin_conjugation.py --input_cone_pumpkin INPUT_FILE_PATH --output_cone_punpkin OUTPUT_FILE_PATH
     """
-    calculation_from_file(input_cone_pumpkin, output_cone_pumpkin)
+    #calculation_from_file(input_cone_pumpkin, output_cone_pumpkin)
+    
+    make_plot(2.779112032701169, 2.7426552741646253, 11.77641299398457, "plot_129.png")
+    make_plot(3.381259022081012, 3.3038462243182645, 10.604168056633558, "plot_192.png")
+    make_plot(4.11331314513517, 3.936275990706959, 8.973747194794122, "plot_284.png")
+    make_plot(5.022450308907609, 4.539925815154523, 6.434290066509123, "plot_424.png")
+    make_plot(6.122831760301824, 0.18315056023670923, 0.00016387785680984195, "plot_630.png")
